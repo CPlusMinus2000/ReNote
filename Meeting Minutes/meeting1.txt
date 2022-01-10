@@ -1,0 +1,15 @@
+CS 398 Meeting Minutes
+
+Date: January 10, 2022
+Team: CKC
+
+Present: Ivan, Adam, Henry, Colin
+Absent: None
+
+Agenda: Discuss specification + introductions to group members
+
+Notes: Project should be doable, good experience, testing devices, Android Studio
+
+Decisions: Considering mobile, want to deploy
+
+TODO: Meet up, identify standout feature
