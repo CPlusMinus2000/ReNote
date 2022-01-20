@@ -1,0 +1,20 @@
+CS 398 Meeting Minutes
+
+Date: January 19, 2022
+Team: CKC
+
+Present: Ivan, Adam, Henry, Colin
+Absent:
+
+Agenda: Talk about meeting up! And how behind we are...
+
+Notes: We need to finish requirements, upload requirements, discuss architecture
+
+Decisions: Probably going to use the three-tier logical separation model?
+
+TODO: Meetup! And finish catch up to where we are supposed to be.
+Ask Jeff/TAs some questions about:
+ - How to document issues in Gitlab/are we doing it right?
+ - Non-functional requirements, where to document them
+ - Are the requirements we're making final? How specific do they need to be?
+ - Software diagrams
