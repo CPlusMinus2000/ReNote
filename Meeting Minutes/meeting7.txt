@@ -1,0 +1,20 @@
+CS 398 Meeting Minutes
+
+Date: January 24, 2022
+Team: CKC
+
+Present: Henry, Colin, Ivan (showed up late-ish)
+Absent: Adam
+
+Agenda: Discuss UI design, current mockup
+
+Notes: We already got Ivan to start on the design, hopefully he can continue
+
+Decisions: Prioritize tablet mode. Good to know we can do that now
+
+TODO: Iterate on existing design mockup
+Watch video about design patterns, make decisions
+Do quiz
+Keep looking at Gantt chart/Personas
+Meet up on Thursday to build slides
+System diagrams

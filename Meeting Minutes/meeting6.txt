@@ -1,0 +1,22 @@
+CS 398 Meeting Minutes
+
+Date: January 21st, 2022
+Team: CKC
+
+Present: Ivan, Henry, Colin
+Absent: Adam
+
+Agenda: Discuss diagrams, ask questions about our current progress
+
+Notes: Seems like we're doing okay so far, but there's a bit more
+work we still need to take care of before our first demo
+
+Decisions: Need to look at charts.
+Ivan => interface design
+Henry => Gantt chart
+Colin => Personas, affinity chart
+Adam => Gitlab wiki documentation
+
+TODO: Make charts!
+Think about design patterns (MVC???)
+Try to meet in person at least once a week
