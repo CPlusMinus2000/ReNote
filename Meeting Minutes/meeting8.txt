@@ -1,0 +1,28 @@
+CS 398 Meeting Minutes
+
+Date: January 26, 2022
+Team: CKC
+
+Present: Ivan, Adam, Henry, Colin
+Absent:
+
+Agenda: Talk about the upcoming design review
+
+Notes: Drew out a rough plan for what we need to present
+ - Rough outline
+ - System architecture
+ - Design patterns
+ - UI
+ - Requirements, affinity chart
+ - Gantt chart?
+ - Gitlab structure, documentation, wiki
+ - Project Plan
+
+Decisions: Meet at Ivan's place tomorrow, get this stuff in the whiteboard
+
+TODO: Meet up!
+Design logo
+Fill out spreadsheet
+Rehearse, make sure we can talk for 10 minutes
+Figure out who's presenting what
+Let's go!
