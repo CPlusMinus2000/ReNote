@@ -1,0 +1,17 @@
+CS 398 Meeting Minutes
+
+Date: January 31, 2022
+Team: CKC
+
+Present: Ivan, Colin
+Absent: Adam (unknown), Henry (out for Lunar New Year preparations)
+
+Agenda: Discuss git, IntelliJ/Android Studio
+
+Notes: Seems this week might be a bit slow?
+Already have git, Kotlin, IntelliJ
+
+Decisions: Going to try IDEA and Android Studio both to see what happens
+
+TODO: Investigate Android libraries
+Look into more Kotlin development stuff
