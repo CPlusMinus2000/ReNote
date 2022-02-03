@@ -1,0 +1,19 @@
+CS 398 Meeting Minutes
+
+Date: February 2nd, 2022
+Team: CKC
+
+Present: Ivan, Henry, Colin
+Absent: Adam (still sick?)
+
+Agenda: Catch up Henry (who was missing)
+
+Notes: Turns out Android versions are more complicated than I expected
+We don't think we need to meet up this week, things will be in person soon
+Need to try and build the project on someone else's machine
+
+Decisions: We might meet up? Gotta resolve a lot more build issues than I expected
+
+TODO: Try to resolve build issues
+Look into external libraries
+Update Gitlab requirements
