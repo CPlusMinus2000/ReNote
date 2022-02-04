@@ -1,0 +1,18 @@
+CS 398 Meeting Minutes
+
+Date: February 4, 2022
+Team: CKC
+
+Present: Ivan, Adam, Henry, Colin
+Absent:
+
+Agenda: Recap the week, think about last remaining tasks
+
+Notes: View/ViewGroups seems okay
+
+Decisions: We're going to use regular rich text formatting with an extra auxiliary timestamp file
+
+TODO: Research toolkits, technical components
+Set up Gitlab a bit more
+Bring tablet to class
+
