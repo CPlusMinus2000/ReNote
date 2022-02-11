@@ -5,4 +5,8 @@
           android:title="@string/action_settings"
           android:orderInCategory="100"
           app:showAsAction="never"/>
+    <item android:id="@+id/action_i_do_not_like_you"
+        android:title="@string/i_don_t_like_you"
+        android:orderInCategory="100"
+        app:showAsAction="never"/>
 </menu>
