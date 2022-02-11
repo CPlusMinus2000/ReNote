@@ -3,13 +3,12 @@ package com.ckc.renote
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Html
-import android.text.Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL
 import android.text.Spannable
 import android.text.style.StyleSpan
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.findNavController
@@ -60,23 +59,37 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
+        val editor: EditText = findViewById(R.id.editor)
+        val start = editor.selectionStart
+        val end = editor.selectionEnd
+        when (item.itemId) {
             R.id.action_bold -> {
-                val boldSpan = StyleSpan(Typeface.BOLD)
-                val editText: EditText = findViewById(R.id.editTextTextPersonName)
-                val start: Int = editText.selectionStart
-                val end: Int = editText.selectionEnd
-                editText.text.setSpan(boldSpan, start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
-                true
+                val ss = editor.text.getSpans(start, end, StyleSpan::class.java)
+                for (span in ss) {
+                    if (span.style == Typeface.BOLD) {
+                        editor.text.removeSpan(span)
+                        return true
+                    }
+                }
+                editor.text.setSpan(StyleSpan(Typeface.BOLD), start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
             }
-            R.id.save -> {
-                val editText: EditText = findViewById(R.id.editTextTextPersonName)
-                val text = Html.toHtml(editText.text, TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
-                editText.setText(Html.fromHtml("$text<p><u>haha</u></p>", Html.FROM_HTML_MODE_COMPACT))
-                true
+            R.id.action_italic -> {
+                val ss = editor.text.getSpans(start, end, StyleSpan::class.java)
+                for (span in ss) {
+                    if (span.style == Typeface.ITALIC) {
+                        editor.text.removeSpan(span)
+                        return true
+                    }
+                }
+                editor.text.setSpan(StyleSpan(Typeface.ITALIC), start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+            }
+            R.id.action_save -> {
+                val text = Html.toHtml(editor.text, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
+                editor.setText(Html.fromHtml("$text<p><u>haha</u></p>", Html.FROM_HTML_MODE_COMPACT))
             }
             else -> super.onOptionsItemSelected(item)
         }
+        return true
     }
 
     override fun onSupportNavigateUp(): Boolean {

@@ -2,13 +2,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/action_bold"
-          android:title="Bold"
+          android:icon="@drawable/ic_baseline_format_bold_24"
+          android:title="@string/bold"
           app:showAsAction="ifRoom"/>
     <item android:id="@+id/action_italic"
-          android:title="Italic"
+          android:icon="@drawable/ic_baseline_format_italic_24"
+          android:title="@string/italic"
           app:showAsAction="ifRoom"/>
-    <item android:id="@+id/action_underline"
-          android:title="Underline"
+    <item android:id="@+id/action_save"
+          android:icon="@drawable/ic_baseline_save_24"
+          android:title="@string/save"
           app:showAsAction="ifRoom"/>
-    <item android:title="@string/save" app:showAsAction="ifRoom" android:id="@+id/save"/>
 </menu>
