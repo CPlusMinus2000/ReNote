@@ -2,11 +2,14 @@ package com.ckc.renote
 
 import android.graphics.Typeface
 import android.os.Bundle
+import android.text.Html
+import android.text.Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL
 import android.text.Spannable
 import android.text.style.StyleSpan
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.findNavController
@@ -58,12 +61,18 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.action_settings -> {
+            R.id.action_bold -> {
                 val boldSpan = StyleSpan(Typeface.BOLD)
                 val editText: EditText = findViewById(R.id.editTextTextPersonName)
                 val start: Int = editText.selectionStart
                 val end: Int = editText.selectionEnd
                 editText.text.setSpan(boldSpan, start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+                true
+            }
+            R.id.save -> {
+                val editText: EditText = findViewById(R.id.editTextTextPersonName)
+                val text = Html.toHtml(editText.text, TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
+                editText.setText(Html.fromHtml("$text<p><u>haha</u></p>", Html.FROM_HTML_MODE_COMPACT))
                 true
             }
             else -> super.onOptionsItemSelected(item)
