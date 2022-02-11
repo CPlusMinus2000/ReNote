@@ -1,17 +1,23 @@
 package com.ckc.renote
 
+import android.graphics.Typeface
 import android.os.Bundle
+import android.text.Spannable
+import android.text.style.StyleSpan
 import android.view.Menu
-import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.navigation.NavigationView
+import android.view.MenuItem
+import android.widget.EditText
+import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.appcompat.app.AppCompatActivity
 import com.ckc.renote.databinding.ActivityMainBinding
+import com.google.android.material.navigation.NavigationView
+import com.google.android.material.snackbar.Snackbar
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -48,6 +54,20 @@ class MainActivity : AppCompatActivity() {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
         return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_settings -> {
+                val boldSpan = StyleSpan(Typeface.BOLD)
+                val editText: EditText = findViewById(R.id.editTextTextPersonName)
+                val start: Int = editText.selectionStart
+                val end: Int = editText.selectionEnd
+                editText.text.setSpan(boldSpan, start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {
