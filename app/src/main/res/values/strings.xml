@@ -10,5 +10,8 @@
     <string name="menu_home">Home</string>
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
+    <string name="bold">Bold</string>
+    <string name="italic">Italic</string>
+    <string name="save">Save</string>
     <string name="i_don_t_like_you">I don\'t like you</string>
 </resources>

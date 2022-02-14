@@ -1,11 +1,11 @@
 package com.ckc.renote
 
+import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Html
 import android.text.Spannable
 import android.text.style.StyleSpan
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
@@ -18,7 +18,6 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.ckc.renote.databinding.ActivityMainBinding
 import com.google.android.material.navigation.NavigationView
-import com.google.android.material.snackbar.Snackbar
 
 
 class MainActivity : AppCompatActivity() {
@@ -35,8 +34,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(binding.appBarMain.toolbar)
 
         binding.appBarMain.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+            startActivity(Intent(this@MainActivity, MainActivity2::class.java))
         }
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
@@ -59,11 +57,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val editor: EditText = findViewById(R.id.editor)
-        val start = editor.selectionStart
-        val end = editor.selectionEnd
-        when (item.itemId) {
+        return when (item.itemId) {
             R.id.action_bold -> {
+                val editor: EditText = findViewById(R.id.edit_text1)
+                val start = editor.selectionStart
+                val end = editor.selectionEnd
                 val ss = editor.text.getSpans(start, end, StyleSpan::class.java)
                 for (span in ss) {
                     if (span.style == Typeface.BOLD) {
@@ -72,8 +70,12 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 editor.text.setSpan(StyleSpan(Typeface.BOLD), start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+                true
             }
             R.id.action_italic -> {
+                val editor: EditText = findViewById(R.id.edit_text1)
+                val start = editor.selectionStart
+                val end = editor.selectionEnd
                 val ss = editor.text.getSpans(start, end, StyleSpan::class.java)
                 for (span in ss) {
                     if (span.style == Typeface.ITALIC) {
@@ -82,14 +84,16 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 editor.text.setSpan(StyleSpan(Typeface.ITALIC), start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+                true
             }
-            R.id.action_save -> {
+            R.id.action_save -> { // TODO: save to file rather than printing to stdout
+                val editor: EditText = findViewById(R.id.edit_text1)
                 val text = Html.toHtml(editor.text, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
                 editor.setText(Html.fromHtml("$text<p><u>haha</u></p>", Html.FROM_HTML_MODE_COMPACT))
+                true
             }
             else -> super.onOptionsItemSelected(item)
         }
-        return true
     }
 
     override fun onSupportNavigateUp(): Boolean {

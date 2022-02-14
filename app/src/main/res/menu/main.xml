@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item android:id="@+id/action_settings"
-          android:title="@string/action_settings"
-          android:orderInCategory="100"
-          app:showAsAction="never"/>
+    <item android:id="@+id/action_bold"
+          android:icon="@drawable/ic_baseline_format_bold_24"
+          android:title="@string/bold"
+          app:showAsAction="ifRoom"/>
+    <item android:id="@+id/action_italic"
+          android:icon="@drawable/ic_baseline_format_italic_24"
+          android:title="@string/italic"
+          app:showAsAction="ifRoom"/>
+    <item android:id="@+id/action_save"
+          android:icon="@drawable/ic_baseline_save_24"
+          android:title="@string/save"
+          app:showAsAction="ifRoom"/>
     <item android:id="@+id/action_i_do_not_like_you"
         android:title="@string/i_don_t_like_you"
         android:orderInCategory="100"
