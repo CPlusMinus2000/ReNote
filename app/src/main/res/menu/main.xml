@@ -13,8 +13,9 @@
           android:icon="@drawable/ic_baseline_save_24"
           android:title="@string/save"
           app:showAsAction="ifRoom"/>
-    <item android:id="@+id/action_i_do_not_like_you"
-        android:title="@string/i_don_t_like_you"
-        android:orderInCategory="100"
-        app:showAsAction="never"/>
+    <item android:id="@+id/action_settings"
+          android:icon="@drawable/ic_baseline_app_settings_alt_24"
+          android:title="@string/settings"
+          android:orderInCategory="100"
+          app:showAsAction="ifRoom"/>
 </menu>

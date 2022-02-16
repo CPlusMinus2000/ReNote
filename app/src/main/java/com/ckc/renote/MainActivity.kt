@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.appBarMain.toolbar)
 
-        binding.appBarMain.fab.setOnClickListener { view ->
+        binding.appBarMain.fab.setOnClickListener { _ ->
             startActivity(Intent(this@MainActivity, MainActivity2::class.java))
         }
         val drawerLayout: DrawerLayout = binding.drawerLayout
@@ -90,6 +90,11 @@ class MainActivity : AppCompatActivity() {
                 val editor: EditText = findViewById(R.id.edit_text1)
                 val text = Html.toHtml(editor.text, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
                 editor.setText(Html.fromHtml("$text<p><u>haha</u></p>", Html.FROM_HTML_MODE_COMPACT))
+                true
+            }
+            R.id.action_settings -> {
+                val intent = Intent(this, SettingsActivity::class.java)
+                startActivity(intent)
                 true
             }
             else -> super.onOptionsItemSelected(item)
