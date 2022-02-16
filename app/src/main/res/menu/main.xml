@@ -14,7 +14,7 @@
           android:title="@string/save"
           app:showAsAction="ifRoom"/>
     <item android:id="@+id/action_settings"
-          android:icon="@drawable/ic_baseline_app_settings_alt_24"
+          android:icon="@drawable/ic_baseline_settings_24"
           android:title="@string/settings"
           android:orderInCategory="100"
           app:showAsAction="ifRoom"/>
