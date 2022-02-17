@@ -22,8 +22,6 @@ import android.widget.ExpandableListView.OnGroupClickListener
 import android.widget.ExpandableListView.OnChildClickListener
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
-import java.util.ArrayList
-import java.util.HashMap
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private var expandableListAdapter: ExpandableListAdapter? = null
