@@ -11,43 +11,58 @@ import android.view.MenuItem
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
-import com.ckc.renote.databinding.ActivityMainBinding
 import com.google.android.material.navigation.NavigationView
 
+import android.widget.ExpandableListView
+import android.util.Log
+import android.view.View
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import androidx.appcompat.app.ActionBarDrawerToggle
+import android.widget.ExpandableListView.OnGroupClickListener
+import android.widget.ExpandableListView.OnChildClickListener
+import androidx.appcompat.widget.Toolbar
+import androidx.core.view.GravityCompat
+import java.util.ArrayList
+import java.util.HashMap
 
-class MainActivity : AppCompatActivity() {
-
-    private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var binding: ActivityMainBinding
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+    private var expandableListAdapter: ExpandableListAdapter? = null
+    private var expandableListView: ExpandableListView? = null
+    var headerList: MutableList<MenuModel> = ArrayList()
+    var childList = HashMap<MenuModel, List<MenuModel>?>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        setSupportActionBar(binding.appBarMain.toolbar)
-
-        binding.appBarMain.fab.setOnClickListener { _ ->
+        setContentView(R.layout.activity_main)
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        val fab = findViewById<FloatingActionButton>(R.id.fab)
+        fab.setOnClickListener { _ ->
             startActivity(Intent(this@MainActivity, MainActivity2::class.java))
         }
-        val drawerLayout: DrawerLayout = binding.drawerLayout
-        val navView: NavigationView = binding.navView
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow
-            ), drawerLayout
+
+        expandableListView = findViewById(R.id.expandableListView)
+        prepareMenuData()
+        populateExpandableList()
+        val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
+        val toggle = ActionBarDrawerToggle(
+            this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
         )
-        setupActionBarWithNavController(navController, appBarConfiguration)
-        navView.setupWithNavController(navController)
+        drawer.addDrawerListener(toggle)
+        toggle.syncState()
+        val navigationView = findViewById<NavigationView>(R.id.nav_view)
+        navigationView.setNavigationItemSelectedListener(this)
+        /**
+         * // Passing each menu ID as a set of Ids because each
+         * // menu should be considered as top level destinations.
+         * mAppBarConfiguration = new AppBarConfiguration.Builder(
+         * R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
+         * .setOpenableLayout(drawer)
+         * .build();
+         * NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+         * NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
+         * NavigationUI.setupWithNavController(navigationView, navController); */
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -101,8 +116,137 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        // Handle navigation view item clicks here.
+        /**
+         * if (id == R.id.nav_camera) {
+         * // Handle the camera action
+         * } else if (id == R.id.nav_gallery) {
+         *
+         * } else if (id == R.id.nav_slideshow) {
+         *
+         * } else if (id == R.id.nav_manage) {
+         *
+         * } else if (id == R.id.nav_share) {
+         *
+         * } else if (id == R.id.nav_send) {
+         *
+         * } */
+        val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
+        drawer.closeDrawer(GravityCompat.START)
+        return true
+    }
+
+    private fun prepareMenuData() {
+        var menuModel = MenuModel(
+            "Fermentation Sciences",
+            true,
+            false,
+            "https://www.journaldev.com/9333/android-webview-example-tutorial"
+        ) //Menu of Android Tutorial. No sub menus
+        headerList.add(menuModel)
+        if (!menuModel.hasChildren) {
+            childList[menuModel] = null
+        }
+        menuModel = MenuModel("Astrology", true, true, "") //Menu of Java Tutorials
+        headerList.add(menuModel)
+        var childModelsList: MutableList<MenuModel> = ArrayList()
+        var childModel = MenuModel(
+            "Moon cycles",
+            false,
+            false,
+            "https://www.journaldev.com/7153/core-java-tutorial"
+        )
+        childModelsList.add(childModel)
+        childModel = MenuModel(
+            "Most influential white girls",
+            false,
+            false,
+            "https://www.journaldev.com/19187/java-fileinputstream"
+        )
+        childModelsList.add(childModel)
+        childModel = MenuModel(
+            "Synchronising periods with moon cycles",
+            false,
+            false,
+            "https://www.journaldev.com/19115/java-filereader"
+        )
+        childModelsList.add(childModel)
+        if (menuModel.hasChildren) {
+            //Log.d("API123","here");
+            childList[menuModel] = childModelsList
+        }
+        childModelsList = ArrayList()
+        menuModel = MenuModel("Animal Sexual Studies", true, true, "") //Menu of Python Tutorials
+        headerList.add(menuModel)
+        childModel = MenuModel(
+            "How urine heals infants",
+            false,
+            false,
+            "https://www.journaldev.com/19243/python-ast-abstract-syntax-tree"
+        )
+        childModelsList.add(childModel)
+        childModel = MenuModel(
+            "Health benefits of cockroach ingestion",
+            false,
+            false,
+            "https://www.journaldev.com/19226/python-fractions"
+        )
+        childModelsList.add(childModel)
+        if (menuModel.hasChildren) {
+            childList[menuModel] = childModelsList
+        }
+    }
+
+    private fun populateExpandableList() {
+        expandableListAdapter = ExpandableListAdapter(this, headerList, childList)
+        expandableListView!!.setAdapter(expandableListAdapter)
+        expandableListView!!.setOnGroupClickListener(OnGroupClickListener { parent, v, groupPosition, id ->
+            if (headerList[groupPosition].isGroup) {
+                if (!headerList[groupPosition].hasChildren) {
+                    Log.d("TAG", "Do something")
+                    // Act
+                    /**
+                     * WebView webView = findViewById(R.id.webView);
+                     * webView.loadUrl(headerList.get(groupPosition).url);
+                     * onBackPressed(); */
+                    /**
+                     * WebView webView = findViewById(R.id.webView);
+                     * webView.loadUrl(headerList.get(groupPosition).url);
+                     * onBackPressed(); */
+                    /**
+                     * WebView webView = findViewById(R.id.webView);
+                     * webView.loadUrl(headerList.get(groupPosition).url);
+                     * onBackPressed(); */
+                    /**
+                     * WebView webView = findViewById(R.id.webView);
+                     * webView.loadUrl(headerList.get(groupPosition).url);
+                     * onBackPressed(); */
+                }
+            }
+            false
+        })
+        expandableListView!!.setOnChildClickListener(object : OnChildClickListener {
+            override fun onChildClick(
+                parent: ExpandableListView,
+                v: View,
+                groupPosition: Int,
+                childPosition: Int,
+                id: Long
+            ): Boolean {
+                if (childList[headerList[groupPosition]] != null) {
+                    Log.d("TAG", "Do something")
+                    // Act
+                    /**
+                     * MenuModel model = childList.get(headerList.get(groupPosition)).get(childPosition);
+                     * if (model.url.length() > 0) {
+                     * WebView webView = findViewById(R.id.webView);
+                     * webView.loadUrl(model.url);
+                     * onBackPressed();
+                     * } */
+                }
+                return false
+            }
+        })
     }
 }
