@@ -12,7 +12,6 @@ import androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent
 import androidx.test.espresso.matcher.ViewMatchers.*
 import org.hamcrest.Description
 import org.hamcrest.Matcher
-import org.hamcrest.Matchers
 import org.hamcrest.TypeSafeMatcher
 import org.hamcrest.core.AllOf.allOf
 import org.junit.Test
@@ -46,6 +45,7 @@ class EspressoTest {
     fun testEnteringText() {
         Intents.init()
         ActivityScenario.launch(MainActivity::class.java)
+        Espresso.closeSoftKeyboard()
         onView(allOf(withId(R.id.edit_text1), isDisplayed()))
             .perform(typeText("Does this work?"))
             .check(matches(withText("Does this work?")))
@@ -57,6 +57,7 @@ class EspressoTest {
     fun testSettingsPreservesText() {
         Intents.init()
         ActivityScenario.launch(MainActivity::class.java)
+        Espresso.closeSoftKeyboard()
         onView(allOf(withId(R.id.edit_text1), isDisplayed()))
             .perform(typeText("This text should be preserved"))
 
