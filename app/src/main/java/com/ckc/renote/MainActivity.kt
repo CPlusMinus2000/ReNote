@@ -159,7 +159,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         )
         childModelsList.add(childModel)
         childModel = MenuModel(
-            "Most influential white girls",
+            "Most influential people",
             false,
             false,
             "https://www.journaldev.com/19187/java-fileinputstream"
@@ -177,10 +177,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             childList[menuModel] = childModelsList
         }
         childModelsList = ArrayList()
-        menuModel = MenuModel("Animal Sexual Studies", true, true, "") //Menu of Python Tutorials
+        menuModel = MenuModel("Animal Studies", true, true, "")
         headerList.add(menuModel)
         childModel = MenuModel(
-            "How urine heals infants",
+            "How milk heals infants",
             false,
             false,
             "https://www.journaldev.com/19243/python-ast-abstract-syntax-tree"
