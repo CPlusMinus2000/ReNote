@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/scrollViewZoom"
+    android:id="@+id/pageScrollView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_centerHorizontal="true"
     android:layout_centerVertical="true" >
 
     <LinearLayout
-        android:id="@+id/wd_content"
+        android:id="@+id/pageScrollLinearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -20,18 +20,14 @@
             android:layout_height="59dp"/>
 
         <include
-            layout="@layout/page"
-            android:layout_width="840dp"
-            android:layout_height="1188dp"/>
+            layout="@layout/page" />
 
         <Space
             android:layout_width="match_parent"
             android:layout_height="59dp"/>
 
         <include
-            layout="@layout/page"
-            android:layout_width="840dp"
-            android:layout_height="1188dp"/>
+            layout="@layout/page"/>
 
         <Space
             android:layout_width="match_parent"
