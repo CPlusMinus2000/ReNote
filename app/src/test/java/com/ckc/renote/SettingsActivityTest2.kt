@@ -1,8 +1,12 @@
 package com.ckc.renote
 
 import junit.framework.TestCase
+import org.junit.Test
 
 class SettingsActivityTest2 : TestCase() {
 
-    fun testOnOptionsItemSelected() {}
+    @Test
+    fun testOnOptionsItemSelected() {
+        assertEquals(2 + 2, 4)
+    }
 }
