@@ -13,7 +13,6 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
 import android.widget.ExpandableListView
-import android.widget.ExpandableListView.OnChildClickListener
 import android.widget.ExpandableListView.OnGroupClickListener
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -23,45 +22,52 @@ import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import java.io.File
-
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private var expandableListAdapter: ExpandableListAdapter? = null
     private var expandableListView: ExpandableListView? = null
-    var headerList: MutableList<MenuModel> = ArrayList()
-    var childList = HashMap<MenuModel, List<MenuModel>?>()
-    var handler: Handler = Handler() // used for autosave looper
-    var runnable: Runnable? = null // used for autosave looper
-    var delay = 10000 // used for autosave looper: 10000 = 10 seconds
+    private var headerList: MutableList<MenuModel> = ArrayList()
+    private var childList = HashMap<MenuModel, List<MenuModel>?>()
+    private var handler: Handler = Handler() // used for autosave looper
+    private var runnable: Runnable? = null // used for autosave looper
+    private var delay = 10000 // used for autosave looper: 10000 = 10 seconds
+    private var currNote: Note? = null
     private var openSection = "data_structures"
-    private var fileType = ".txt"
+    private var fileType = ".json"
 
+    @OptIn(ExperimentalSerializationApi::class)
     private fun loadFromFile(sectionName: String) {
         openSection = sectionName
-        var contents = this.openFileInput(openSection.plus(fileType)).bufferedReader().useLines { lines ->
+        val contents = this.openFileInput(openSection.plus(fileType)).bufferedReader().useLines { lines ->
             lines.fold("") { some, text ->
                 "$some\n$text"
             }
         }
+        currNote = Json.decodeFromString<Note>(contents)
         val editor: EditText = findViewById(R.id.edit_text1)
-        editor.setText(Html.fromHtml("$contents", Html.FROM_HTML_MODE_COMPACT))
-        //editor.setText(contents)
+        editor.setText(Html.fromHtml(currNote!!.contents, Html.FROM_HTML_MODE_COMPACT))
     }
 
     private fun saveFile() {
         val editor: EditText = findViewById(R.id.edit_text1)
         val text = Html.toHtml(editor.text, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
-        //editor.setText(Html.fromHtml("$text<p><u>haha</u></p>", Html.FROM_HTML_MODE_COMPACT))
+        currNote!!.contents = text
         val filename = openSection.plus(fileType)
-        var file = File(this.filesDir, filename)
-        file.writeText(text, Charsets.UTF_8)
+        val file = File(this.filesDir, filename)
+        file.writeText(Json.encodeToString(currNote), Charsets.UTF_8)
     }
 
     private fun createFileIfDoesntExist(sectionName: String) {
         val filename = sectionName.plus(fileType)
-        var file = File(this.filesDir, filename)
+        val file = File(this.filesDir, filename)
         if (!file.exists()) {
-            file.writeText("", Charsets.UTF_8)
+            val currTime = System.currentTimeMillis()
+            val note = Note("", sectionName, currTime, currTime, null)
+            file.writeText(Json.encodeToString(note), Charsets.UTF_8)
         }
     }
 
@@ -148,10 +154,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 editor.text.setSpan(StyleSpan(Typeface.ITALIC), start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
                 true
             }
-            R.id.action_save -> { // TODO: save to file rather than printing to stdout
-
+            R.id.action_save -> {
                 saveFile()
-
                 true
             }
             R.id.action_settings -> {
@@ -187,35 +191,35 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun prepareMenuData() {
         var menuModel = MenuModel(
             "Physics",
-            true,
-            false,
+            isGroup = true,
+            hasChildren = false,
             "physics"
         ) //Menu of Android Tutorial. No sub menus
         headerList.add(menuModel)
         if (!menuModel.hasChildren) {
             childList[menuModel] = null
         }
-        menuModel = MenuModel("Computer Science", true, true, "") //Menu of Java Tutorials
+        menuModel = MenuModel("Computer Science", isGroup = true, hasChildren = true, "") //Menu of Java Tutorials
         headerList.add(menuModel)
         var childModelsList: MutableList<MenuModel> = ArrayList()
         var childModel = MenuModel(
             "Data Structures",
-            false,
-            false,
+            isGroup = false,
+            hasChildren = false,
             "data_structures"
         )
         childModelsList.add(childModel)
         childModel = MenuModel(
             "Functional Programming",
-            false,
-            false,
+            isGroup = false,
+            hasChildren = false,
             "functional_programming"
         )
         childModelsList.add(childModel)
         childModel = MenuModel(
             "Object-Oriented Programming",
-            false,
-            false,
+            isGroup = false,
+            hasChildren = false,
             "object_oriented_programming"
         )
         childModelsList.add(childModel)
@@ -224,19 +228,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             childList[menuModel] = childModelsList
         }
         childModelsList = ArrayList()
-        menuModel = MenuModel("Public Speaking", true, true, "") //Menu of Python Tutorials
+        menuModel = MenuModel("Public Speaking", isGroup = true, hasChildren = true, "") //Menu of Python Tutorials
         headerList.add(menuModel)
         childModel = MenuModel(
             "Selection Interview",
-            false,
-            false,
+            isGroup = false,
+            hasChildren = false,
             "selection_interview"
         )
         childModelsList.add(childModel)
         childModel = MenuModel(
             "Information-Gathering Interview",
-            false,
-            false,
+            isGroup = false,
+            hasChildren = false,
             "information_gathering_interview"
         )
         childModelsList.add(childModel)
@@ -248,7 +252,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun populateExpandableList() {
         expandableListAdapter = ExpandableListAdapter(this, headerList, childList)
         expandableListView!!.setAdapter(expandableListAdapter)
-        expandableListView!!.setOnGroupClickListener(OnGroupClickListener { parent, v, groupPosition, id ->
+        expandableListView!!.setOnGroupClickListener(OnGroupClickListener { _, _, groupPosition, _ ->
             if (headerList[groupPosition].isGroup) {
                 if (!headerList[groupPosition].hasChildren) {
                     //This is how to load from the file
@@ -284,11 +288,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             false
         })
 
-        expandableListView!!.setOnChildClickListener { parent, v, groupPosition, childPosition, id ->
+        expandableListView!!.setOnChildClickListener { _, _, groupPosition, childPosition, _ ->
             if (childList[headerList[groupPosition]] != null) {
                 saveFile()
                 val model = childList[headerList[groupPosition]]!![childPosition]
-                loadFromFile(model.url);
+                loadFromFile(model.url)
                 // Close the navigation drawer
                 val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
                 drawer.closeDrawer(GravityCompat.START)
