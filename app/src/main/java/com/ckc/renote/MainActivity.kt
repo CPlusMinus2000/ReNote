@@ -18,6 +18,7 @@ import android.widget.ExpandableListView.OnGroupClickListener
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -110,6 +111,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         createMissingFiles()
         loadFromFile(openSection)
         updatePageScrollView()
+
+        //window.statusBarColor = ContextCompat.getColor(this, R.color.dark_red)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -148,10 +151,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 editor.text.setSpan(StyleSpan(Typeface.ITALIC), start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
                 true
             }
-            R.id.action_save -> { // TODO: save to file rather than printing to stdout
-
+            R.id.action_save -> {
                 saveFile()
-
                 true
             }
             R.id.action_settings -> {
@@ -188,17 +189,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         var menuModel = MenuModel(
             "Physics",
             true,
-            false,
+            true,
             "physics"
         ) //Menu of Android Tutorial. No sub menus
         headerList.add(menuModel)
+        var childModelsList: MutableList<MenuModel> = ArrayList()
+        var childModel = MenuModel(
+            "+ new section",
+            false,
+            false,
+            "information_gathering_interview"
+        )
+        childModelsList.add(childModel)
         if (!menuModel.hasChildren) {
             childList[menuModel] = null
         }
+        childModelsList = ArrayList()
         menuModel = MenuModel("Computer Science", true, true, "") //Menu of Java Tutorials
         headerList.add(menuModel)
-        var childModelsList: MutableList<MenuModel> = ArrayList()
-        var childModel = MenuModel(
+        childModel = MenuModel(
             "Data Structures",
             false,
             false,
@@ -217,6 +226,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             false,
             false,
             "object_oriented_programming"
+        )
+        childModelsList.add(childModel)
+        childModel = MenuModel(
+            "+ new section",
+            false,
+            false,
+            "information_gathering_interview"
         )
         childModelsList.add(childModel)
         if (menuModel.hasChildren) {
@@ -240,8 +256,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             "information_gathering_interview"
         )
         childModelsList.add(childModel)
+        childModel = MenuModel(
+            "+ new section",
+            false,
+            false,
+            "information_gathering_interview"
+        )
+        childModelsList.add(childModel)
         if (menuModel.hasChildren) {
             childList[menuModel] = childModelsList
+        }
+        menuModel = MenuModel(
+            "+ new textbook",
+            true,
+            false,
+            "physics"
+        ) //Menu of Android Tutorial. No sub menus
+        headerList.add(menuModel)
+        if (!menuModel.hasChildren) {
+            childList[menuModel] = null
         }
     }
 
@@ -251,17 +284,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         expandableListView!!.setOnGroupClickListener(OnGroupClickListener { parent, v, groupPosition, id ->
             if (headerList[groupPosition].isGroup) {
                 if (!headerList[groupPosition].hasChildren) {
-                    //This is how to load from the file
-                    //var contents = this.openFileInput(filename).bufferedReader().useLines { lines ->
-                    //    lines.fold("") { some, text ->
-                    //        "$some\n$text"
-                    //    }
-                    //}
-                    //editor.setText(Html.fromHtml("$contents", Html.FROM_HTML_MODE_COMPACT))
-                    //editor.setText(contents)
-                    // is how to load from the file
-                    Log.d("TAG", "Do something")
-                    // Act
 
                     /**
                      * WebView webView = findViewById(R.id.webView);
