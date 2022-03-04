@@ -56,6 +56,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val editor: EditText = findViewById(R.id.edit_text1)
         val text = Html.toHtml(editor.text, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
         currNote!!.contents = text
+        currNote!!.lastEdited = System.currentTimeMillis()
         val filename = openSection.plus(fileType)
         val file = File(this.filesDir, filename)
         file.writeText(Json.encodeToString(currNote), Charsets.UTF_8)

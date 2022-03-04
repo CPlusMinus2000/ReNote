@@ -6,6 +6,6 @@ data class Note(
     var contents: String,
     var name: String,
     val creationTime: Long,
-    val lastEdited: Long,
+    var lastEdited: Long,
     val customOrder: Int?
 )
