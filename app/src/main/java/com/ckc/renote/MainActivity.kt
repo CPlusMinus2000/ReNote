@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
         currNote = Json.decodeFromString<Note>(contents)
-        editor.load(contents)
+        editor.load(currNote!!.contents)
     }
 
     private fun saveFile() {
