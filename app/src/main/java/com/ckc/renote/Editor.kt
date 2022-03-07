@@ -27,7 +27,18 @@ class Editor(
 
     fun strikeThrough() = webview.evaluateJavascript("document.execCommand('strikeThrough')", null)
 
-    fun increaseFontSize() = webview.evaluateJavascript("document.execCommand('increaseFontSize')", null)
+    private fun changeFontSize(change: String) {
+        val script = """{
+            let selected = window.getSelection().getRangeAt(0);
+            let selectedText = selected.extractContents();
+            let change = document.createElement('$change');
+            change.appendChild(selectedText);
+            selected.insertNode(change);
+        }""".trimIndent()
+        webview.evaluateJavascript(script, null)
+    }
 
-    fun decreaseFontSize() = webview.evaluateJavascript("document.execCommand('decreaseFontSize')", null)
+    fun increaseFontSize() = changeFontSize("big")
+
+    fun decreaseFontSize() = changeFontSize("small")
 }

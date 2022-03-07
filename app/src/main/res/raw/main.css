@@ -4,8 +4,3 @@
     min-width: 840px;
     min-height: 1188px;
 }
-
-::selection {
-    background: #3c7084;
-    color: #FFFFFF;
-}

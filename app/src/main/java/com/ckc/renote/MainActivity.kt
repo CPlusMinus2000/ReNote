@@ -114,6 +114,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         when (item.itemId) {
             R.id.action_bold -> editor.bold()
             R.id.action_italic -> editor.italic()
+            R.id.action_underline -> editor.underline()
+            R.id.action_strikethrough -> editor.strikeThrough()
+            R.id.action_increase_font_size -> editor.increaseFontSize()
+            R.id.action_decrease_font_size -> editor.decreaseFontSize()
             R.id.action_save -> saveFile()
             R.id.action_settings -> {
                 val intent = Intent(this, SettingsActivity::class.java)
