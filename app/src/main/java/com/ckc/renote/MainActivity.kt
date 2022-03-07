@@ -1,24 +1,16 @@
 package com.ckc.renote
 
 import android.content.Intent
-import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Handler
-import android.text.Html
-import android.text.Spannable
-import android.text.style.StyleSpan
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.EditText
 import android.widget.ExpandableListView
-import android.widget.ExpandableListView.OnChildClickListener
 import android.widget.ExpandableListView.OnGroupClickListener
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -34,33 +26,29 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     var handler: Handler = Handler() // used for autosave looper
     var runnable: Runnable? = null // used for autosave looper
     var delay = 10000 // used for autosave looper: 10000 = 10 seconds
+    private lateinit var editor: Editor
     private var openSection = "data_structures"
     private var fileType = ".txt"
 
     private fun loadFromFile(sectionName: String) {
         openSection = sectionName
-        var contents = this.openFileInput(openSection.plus(fileType)).bufferedReader().useLines { lines ->
+        val contents = this.openFileInput(openSection.plus(fileType)).bufferedReader().useLines { lines ->
             lines.fold("") { some, text ->
                 "$some\n$text"
             }
         }
-        val editor: EditText = findViewById(R.id.edit_text1)
-        editor.setText(Html.fromHtml("$contents", Html.FROM_HTML_MODE_COMPACT))
-        //editor.setText(contents)
+        editor.load(contents)
     }
 
     private fun saveFile() {
-        val editor: EditText = findViewById(R.id.edit_text1)
-        val text = Html.toHtml(editor.text, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
-        //editor.setText(Html.fromHtml("$text<p><u>haha</u></p>", Html.FROM_HTML_MODE_COMPACT))
         val filename = openSection.plus(fileType)
-        var file = File(this.filesDir, filename)
-        file.writeText(text, Charsets.UTF_8)
+        val file = File(this.filesDir, filename)
+        editor.save(file)
     }
 
     private fun createFileIfDoesntExist(sectionName: String) {
         val filename = sectionName.plus(fileType)
-        var file = File(this.filesDir, filename)
+        val file = File(this.filesDir, filename)
         if (!file.exists()) {
             file.writeText("", Charsets.UTF_8)
         }
@@ -109,6 +97,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
          * NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
          * NavigationUI.setupWithNavController(navigationView, navController); */
         createMissingFiles()
+        editor = Editor(findViewById(R.id.editor))
         loadFromFile(openSection)
         updatePageScrollView()
 
@@ -122,46 +111,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_bold -> {
-                val editor: EditText = findViewById(R.id.edit_text1)
-                val start = editor.selectionStart
-                val end = editor.selectionEnd
-                val ss = editor.text.getSpans(start, end, StyleSpan::class.java)
-                for (span in ss) {
-                    if (span.style == Typeface.BOLD) {
-                        editor.text.removeSpan(span)
-                        return true
-                    }
-                }
-                editor.text.setSpan(StyleSpan(Typeface.BOLD), start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
-                true
-            }
-            R.id.action_italic -> {
-                val editor: EditText = findViewById(R.id.edit_text1)
-                val start = editor.selectionStart
-                val end = editor.selectionEnd
-                val ss = editor.text.getSpans(start, end, StyleSpan::class.java)
-                for (span in ss) {
-                    if (span.style == Typeface.ITALIC) {
-                        editor.text.removeSpan(span)
-                        return true
-                    }
-                }
-                editor.text.setSpan(StyleSpan(Typeface.ITALIC), start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
-                true
-            }
-            R.id.action_save -> {
-                saveFile()
-                true
-            }
+        when (item.itemId) {
+            R.id.action_bold -> editor.bold()
+            R.id.action_italic -> editor.italic()
+            R.id.action_save -> saveFile()
             R.id.action_settings -> {
                 val intent = Intent(this, SettingsActivity::class.java)
                 startActivity(intent)
-                true
             }
-            else -> super.onOptionsItemSelected(item)
+            else -> return super.onOptionsItemSelected(item)
         }
+        return true
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
