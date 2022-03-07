@@ -7,7 +7,6 @@ import android.os.Handler
 import android.text.Html
 import android.text.Spannable
 import android.text.style.StyleSpan
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -117,6 +116,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         createMissingFiles()
         loadFromFile(openSection)
         updatePageScrollView()
+
+        //window.statusBarColor = ContextCompat.getColor(this, R.color.dark_red)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -197,13 +198,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             "physics"
         ) //Menu of Android Tutorial. No sub menus
         headerList.add(menuModel)
+        var childModelsList: MutableList<MenuModel> = ArrayList()
+        var childModel = MenuModel(
+            "+ new section",
+            false,
+            false,
+            "information_gathering_interview"
+        )
+        childModelsList.add(childModel)
         if (!menuModel.hasChildren) {
             childList[menuModel] = null
         }
         menuModel = MenuModel("Computer Science", isGroup = true, hasChildren = true, "") //Menu of Java Tutorials
+        childModelsList = ArrayList()
         headerList.add(menuModel)
-        var childModelsList: MutableList<MenuModel> = ArrayList()
-        var childModel = MenuModel(
+        childModel = MenuModel(
             "Data Structures",
             isGroup = false,
             hasChildren = false,
@@ -222,6 +231,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             isGroup = false,
             hasChildren = false,
             "object_oriented_programming"
+        )
+        childModelsList.add(childModel)
+        childModel = MenuModel(
+            "+ new section",
+            false,
+            false,
+            "information_gathering_interview"
         )
         childModelsList.add(childModel)
         if (menuModel.hasChildren) {
@@ -245,8 +261,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             "information_gathering_interview"
         )
         childModelsList.add(childModel)
+        childModel = MenuModel(
+            "+ new section",
+            false,
+            false,
+            "information_gathering_interview"
+        )
+        childModelsList.add(childModel)
         if (menuModel.hasChildren) {
             childList[menuModel] = childModelsList
+        }
+        menuModel = MenuModel(
+            "+ new textbook",
+            true,
+            false,
+            "physics"
+        ) //Menu of Android Tutorial. No sub menus
+        headerList.add(menuModel)
+        if (!menuModel.hasChildren) {
+            childList[menuModel] = null
         }
     }
 
@@ -256,17 +289,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         expandableListView!!.setOnGroupClickListener(OnGroupClickListener { _, _, groupPosition, _ ->
             if (headerList[groupPosition].isGroup) {
                 if (!headerList[groupPosition].hasChildren) {
-                    //This is how to load from the file
-                    //var contents = this.openFileInput(filename).bufferedReader().useLines { lines ->
-                    //    lines.fold("") { some, text ->
-                    //        "$some\n$text"
-                    //    }
-                    //}
-                    //editor.setText(Html.fromHtml("$contents", Html.FROM_HTML_MODE_COMPACT))
-                    //editor.setText(contents)
-                    // is how to load from the file
-                    Log.d("TAG", "Do something")
-                    // Act
 
                     /**
                      * WebView webView = findViewById(R.id.webView);
