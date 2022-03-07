@@ -95,4 +95,7 @@ fabric.properties
 app/build
 local.properties
 
+# Databases
+*.db
+
 # End of https://www.toptal.com/developers/gitignore/api/intellij+iml
