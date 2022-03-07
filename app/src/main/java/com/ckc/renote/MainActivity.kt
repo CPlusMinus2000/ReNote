@@ -1,16 +1,11 @@
 package com.ckc.renote
 
 import android.content.Intent
-import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Handler
-import android.text.Html
-import android.text.Spannable
-import android.text.style.StyleSpan
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.EditText
 import android.widget.ExpandableListView
 import android.widget.ExpandableListView.OnGroupClickListener
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -35,6 +30,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var runnable: Runnable? = null // used for autosave looper
     private var delay = 10000 // used for autosave looper: 10000 = 10 seconds
     private var currNote: Note? = null
+    private lateinit var editor: Editor
     private var openSection = "data_structures"
     private var fileType = ".json"
 
@@ -47,18 +43,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
         currNote = Json.decodeFromString<Note>(contents)
-        val editor: EditText = findViewById(R.id.edit_text1)
-        editor.setText(Html.fromHtml(currNote!!.contents, Html.FROM_HTML_MODE_COMPACT))
+        editor.load(contents)
     }
 
     private fun saveFile() {
-        val editor: EditText = findViewById(R.id.edit_text1)
-        val text = Html.toHtml(editor.text, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
-        currNote!!.contents = text
-        currNote!!.lastEdited = System.currentTimeMillis()
         val filename = openSection.plus(fileType)
         val file = File(this.filesDir, filename)
-        file.writeText(Json.encodeToString(currNote), Charsets.UTF_8)
+        editor.save(file, currNote!!)
     }
 
     private fun createFileIfDoesntExist(sectionName: String) {
@@ -114,6 +105,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
          * NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
          * NavigationUI.setupWithNavController(navigationView, navController); */
         createMissingFiles()
+        editor = Editor(findViewById(R.id.editor))
         loadFromFile(openSection)
         updatePageScrollView()
 
@@ -127,46 +119,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_bold -> {
-                val editor: EditText = findViewById(R.id.edit_text1)
-                val start = editor.selectionStart
-                val end = editor.selectionEnd
-                val ss = editor.text.getSpans(start, end, StyleSpan::class.java)
-                for (span in ss) {
-                    if (span.style == Typeface.BOLD) {
-                        editor.text.removeSpan(span)
-                        return true
-                    }
-                }
-                editor.text.setSpan(StyleSpan(Typeface.BOLD), start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
-                true
-            }
-            R.id.action_italic -> {
-                val editor: EditText = findViewById(R.id.edit_text1)
-                val start = editor.selectionStart
-                val end = editor.selectionEnd
-                val ss = editor.text.getSpans(start, end, StyleSpan::class.java)
-                for (span in ss) {
-                    if (span.style == Typeface.ITALIC) {
-                        editor.text.removeSpan(span)
-                        return true
-                    }
-                }
-                editor.text.setSpan(StyleSpan(Typeface.ITALIC), start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
-                true
-            }
-            R.id.action_save -> {
-                saveFile()
-                true
-            }
+        when (item.itemId) {
+            R.id.action_bold -> editor.bold()
+            R.id.action_italic -> editor.italic()
+            R.id.action_underline -> editor.underline()
+            R.id.action_strikethrough -> editor.strikeThrough()
+            R.id.action_increase_font_size -> editor.increaseFontSize()
+            R.id.action_decrease_font_size -> editor.decreaseFontSize()
+            R.id.action_save -> saveFile()
             R.id.action_settings -> {
                 val intent = Intent(this, SettingsActivity::class.java)
                 startActivity(intent)
-                true
             }
-            else -> super.onOptionsItemSelected(item)
+            else -> return super.onOptionsItemSelected(item)
         }
+        return true
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
