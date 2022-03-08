@@ -21,7 +21,13 @@ class Editor(
         file.writeText(Json.encodeToString(currNote), Charsets.UTF_8)
     }
 
-    fun load(text: String) = webview.evaluateJavascript("document.getElementById('editor').innerHTML = $text", null)
+    fun load(text: String) {
+        if (text.length > 2) { // text != ""
+            webview.evaluateJavascript("document.getElementById('editor').innerHTML = $text", null)
+        } else {
+            webview.evaluateJavascript("document.getElementById('editor').innerHTML = ''", null)
+        }
+    }
 
     fun bold() = webview.evaluateJavascript("document.execCommand('bold')", null)
 
