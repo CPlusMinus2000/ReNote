@@ -2,6 +2,13 @@ package com.ckc.renote
 
 import junit.framework.TestCase
 
+fun getRandomString(length: Int) : String {
+    val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+    return (1..length)
+        .map { allowedChars.random() }
+        .joinToString("")
+}
+
 class DatabaseTest : TestCase() {
     private var db: Database? = null
 
@@ -43,5 +50,26 @@ class DatabaseTest : TestCase() {
         assertEquals(testNote2, rets[1])
     }
 
-    fun testSearchWithText() {}
+    fun testSearchWithText() {
+        val randomText = getRandomString(10)
+        val testNote1 = Note(
+            "This is a test with $randomText", "test", System.currentTimeMillis(),
+            System.currentTimeMillis(), null
+        )
+        val testNote2 = Note(
+            "This is another test with $randomText", "test2", System.currentTimeMillis(),
+            System.currentTimeMillis(), null
+        )
+        val testNote3 = Note(
+            "This is a tset", "test3", System.currentTimeMillis(),
+            System.currentTimeMillis(), null
+        )
+
+        db!!.insertNotes(listOf(testNote1, testNote2))
+        val rets = db!!.searchWithText(randomText)
+
+        assertEquals(2, rets.size)
+        assertEquals(testNote1, rets[0])
+        assertEquals(testNote2, rets[1])
+    }
 }

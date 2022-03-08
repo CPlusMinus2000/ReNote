@@ -146,7 +146,7 @@ class Database(url: String, private val tableName: String = "Notes") {
         val searchResults = mutableListOf<Note>()
         try {
             if (conn != null) {
-                val sql = "select * from $tableName where contents contains $text"
+                val sql = "select * from $tableName where contents like \"%$text%\" order by noteID asc;"
 
                 val query = conn!!.createStatement()
                 val results = query.executeQuery(sql)
