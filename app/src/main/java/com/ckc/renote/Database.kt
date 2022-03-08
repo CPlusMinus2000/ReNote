@@ -46,7 +46,7 @@ class Database(url: String, private val tableName: String = "Notes") {
                 query.executeUpdate(insertion)
 
                 val idQuery = conn!!.createStatement()
-                val idRes = idQuery.executeQuery("select last_insert_rowid() from $tableName")
+                val idRes = idQuery.executeQuery("select last_insert_rowid() from $tableName limit 1;")
                 while (idRes.next()) {
                     id = idRes.getInt("last_insert_rowid()")
                 }
@@ -62,22 +62,20 @@ class Database(url: String, private val tableName: String = "Notes") {
         val ids = mutableListOf<Int>()
         try {
             if (conn != null) {
-                var insertion = "insert into $tableName(" +
-                        "contents, name, creationTime, lastEdited, customOrder) values"
-
                 for (note in notes) {
-                    val ivalue = "(\"${note.contents}\", \"${note.name}\", ${note.creationTime}, " +
-                            "${note.lastEdited}, ${note.customOrder})"
-                    insertion += ivalue
-                }
+                    val insertion = "insert into $tableName(" +
+                            "contents, name, creationTime, lastEdited, customOrder) values (" +
+                            "\"${note.contents}\", \"${note.name}\", ${note.creationTime}, " +
+                            "${note.lastEdited}, ${note.customOrder});"
 
-                val query = conn!!.createStatement()
-                query.executeUpdate(insertion)
+                    val query = conn!!.createStatement()
+                    query.executeUpdate(insertion)
 
-                val idQuery = conn!!.createStatement()
-                val idRes = idQuery.executeQuery("select last_insert_rowid() from $tableName")
-                while (idRes.next()) {
-                    ids.add(idRes.getInt("last_insert_rowid()"))
+                    val idQuery = conn!!.createStatement()
+                    val idRes = idQuery.executeQuery("select last_insert_rowid() from $tableName limit 1;")
+                    while (idRes.next()) {
+                        ids.add(idRes.getInt("last_insert_rowid()"))
+                    }
                 }
             }
         } catch (ex: SQLException) {
@@ -109,6 +107,38 @@ class Database(url: String, private val tableName: String = "Notes") {
         }
 
         return note
+    }
+
+    fun selectWithIds(ids: List<Int>): List<Note> {
+        val notes = mutableListOf<Note>()
+        try {
+            if (conn != null) {
+                var sql = "select * from $tableName where noteID in ("
+                for (id in ids) {
+                    sql += "$id,"
+                }
+                sql = sql.substring(0, sql.length - 1)
+                sql += ")"
+
+                val query = conn!!.createStatement()
+                val results = query.executeQuery(sql)
+                while (results.next()) {
+                    notes.add(
+                        Note(
+                            results.getString("contents"),
+                            results.getString("name"),
+                            results.getLong("creationTime"),
+                            results.getLong("lastEdited"),
+                            if (results.getObject("customOrder") == null) null else results.getInt("customOrder")
+                        )
+                    )
+                }
+            }
+        } catch (ex: SQLException) {
+            println(ex.message)
+        }
+
+        return notes
     }
 
     // Get all notes containing a substring as contents

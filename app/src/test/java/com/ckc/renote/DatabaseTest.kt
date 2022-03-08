@@ -25,7 +25,23 @@ class DatabaseTest : TestCase() {
         assertEquals(testNote, ret)
     }
 
-    fun testInsertNotes() {}
+    fun testInsertNotes() {
+        val testNote1 = Note(
+            "This is a test", "test", System.currentTimeMillis(),
+            System.currentTimeMillis(), null
+        )
+        val testNote2 = Note(
+            "This is another test", "test", System.currentTimeMillis(),
+            System.currentTimeMillis(), null
+        )
+
+        val ids = db!!.insertNotes(listOf(testNote1, testNote2))
+        val rets = db!!.selectWithIds(ids)
+
+        assertEquals(2, rets.size)
+        assertEquals(testNote1, rets[0])
+        assertEquals(testNote2, rets[1])
+    }
 
     fun testSearchWithText() {}
 }
