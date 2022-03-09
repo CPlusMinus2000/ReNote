@@ -33,4 +33,6 @@
     <string name="decrease_font_size">Decrease Font Size</string>
     <string name="underline">Underline</string>
     <string name="strikethrough">Strikethrough</string>
+    <string name="undo">Undo</string>
+    <string name="redo">Redo</string>
 </resources>

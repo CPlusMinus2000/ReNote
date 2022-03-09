@@ -120,6 +120,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            R.id.action_undo -> editor.undo()
+            R.id.action_redo -> editor.redo()
+            R.id.action_record -> editor.record()
+            R.id.action_play -> editor.play()
             R.id.action_bold -> editor.bold()
             R.id.action_italic -> editor.italic()
             R.id.action_underline -> editor.underline()

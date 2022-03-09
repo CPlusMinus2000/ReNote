@@ -1,7 +1,9 @@
 package com.ckc.renote
 
 import android.annotation.SuppressLint
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -9,24 +11,49 @@ import java.io.File
 @SuppressLint("SetJavaScriptEnabled")
 class Editor(
     private val webview: WebView
-) {
+) : WebViewClient() {
+
+    private val undoManager: UndoManager = UndoManager()
+    private var undoing = false
+    private val rewinder: Rewinder = Rewinder()
+    private var recording = false
+
     init {
+        webview.webViewClient = this
         webview.loadUrl("file:///android_res/raw/editor.html")
         webview.settings.javaScriptEnabled = true
     }
 
-    fun save(file: File, currNote: Note) = webview.evaluateJavascript("document.getElementById('editor').innerHTML") { s ->
-        currNote.contents = s
+    override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+        val url = request.url
+        if (url.scheme == "change") {
+            if (!undoing) {
+                undoManager.addState(State(url.toString().substring(9)))
+                rewinder.addState(State(url.toString().substring(9)))
+            }
+            return true
+        }
+        return super.shouldOverrideUrlLoading(view, request)
+    }
+
+    fun setEditable(editable: Boolean) = webview.evaluateJavascript("document.getElementById('editor').contentEditable = $editable", null)
+
+    fun setContent(text: String) {
+        webview.evaluateJavascript("document.getElementById('editor').innerHTML = \"$text\"") {
+            undoing = false
+        }
+    }
+
+    fun save(file: File, currNote: Note) = webview.evaluateJavascript("document.getElementById('editor').innerHTML") {
+        currNote.contents = it
         currNote.lastEdited = System.currentTimeMillis()
         file.writeText(Json.encodeToString(currNote), Charsets.UTF_8)
     }
 
     fun load(text: String) {
-        if (text.length > 2) { // text != ""
-            webview.evaluateJavascript("document.getElementById('editor').innerHTML = $text", null)
-        } else {
-            webview.evaluateJavascript("document.getElementById('editor').innerHTML = ''", null)
-        }
+        val trimmed = text.trim('\"')
+        setContent(trimmed)
+        undoManager.initState(State(trimmed))
     }
 
     fun bold() = webview.evaluateJavascript("document.execCommand('bold')", null)
@@ -37,18 +64,30 @@ class Editor(
 
     fun strikeThrough() = webview.evaluateJavascript("document.execCommand('strikeThrough')", null)
 
-    private fun changeFontSize(change: String) {
-        val script = """{
-            let selected = window.getSelection().getRangeAt(0);
-            let selectedText = selected.extractContents();
-            let change = document.createElement('$change');
-            change.appendChild(selectedText);
-            selected.insertNode(change);
-        }""".trimIndent()
-        webview.evaluateJavascript(script, null)
+    fun increaseFontSize() = webview.evaluateJavascript("changeFontSize('big')", null)
+
+    fun decreaseFontSize() = webview.evaluateJavascript("changeFontSize('small')", null)
+
+    fun undo() {
+        undoing = true
+        setContent(undoManager.undo().content)
     }
 
-    fun increaseFontSize() = changeFontSize("big")
+    fun redo() {
+        undoing = true
+        setContent(undoManager.redo().content)
+    }
 
-    fun decreaseFontSize() = changeFontSize("small")
+    fun record() {
+        if (!recording) {
+            rewinder.startRecording(undoManager.getCurrentState())
+        } else {
+            rewinder.stopRecording()
+        }
+        recording = !recording
+    }
+
+    fun play() {
+        rewinder.playRecording(this, undoManager.getCurrentState())
+    }
 }
