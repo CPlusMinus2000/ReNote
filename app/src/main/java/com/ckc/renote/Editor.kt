@@ -16,7 +16,6 @@ class Editor(
     private val undoManager: UndoManager = UndoManager()
     private var undoing = false
     private val rewinder: Rewinder = Rewinder()
-    private var recording = false
 
     init {
         webview.webViewClient = this
@@ -78,14 +77,9 @@ class Editor(
         setContent(undoManager.redo().content)
     }
 
-    fun record() {
-        if (!recording) {
-            rewinder.startRecording(undoManager.getCurrentState())
-        } else {
-            rewinder.stopRecording()
-        }
-        recording = !recording
-    }
+    fun startRecording() = rewinder.startRecording(undoManager.getCurrentState())
+
+    fun stopRecording() = rewinder.stopRecording()
 
     fun play() {
         rewinder.playRecording(this, undoManager.getCurrentState())

@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item android:id="@+id/action_undo"
-          android:title="@string/undo"
-          app:showAsAction="always"/>
-    <item android:id="@+id/action_redo"
-          android:title="@string/redo"
-          app:showAsAction="always"/>
     <item android:id="@+id/action_record"
           android:title="Record"
           app:showAsAction="always"/>
     <item android:id="@+id/action_play"
           android:title="Play"
+          app:showAsAction="always"/>
+    <item android:id="@+id/action_undo"
+          android:icon="@drawable/ic_baseline_undo_24"
+          android:title="@string/undo"
+          app:showAsAction="always"/>
+    <item android:id="@+id/action_redo"
+          android:icon="@drawable/ic_baseline_redo_24"
+          android:title="@string/redo"
           app:showAsAction="always"/>
     <item android:id="@+id/action_bold"
           android:icon="@drawable/ic_baseline_format_bold_24"

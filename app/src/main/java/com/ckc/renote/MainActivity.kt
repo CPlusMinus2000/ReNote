@@ -30,6 +30,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var runnable: Runnable? = null // used for autosave looper
     private var delay = 10000 // used for autosave looper: 10000 = 10 seconds
     private var currNote: Note? = null
+    private var recording: Boolean = false
     private lateinit var editor: Editor
     private var openSection = "data_structures"
     private var fileType = ".json"
@@ -120,10 +121,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            R.id.action_record -> {
+                if (!recording) {
+                    editor.startRecording()
+                    item.title = "Stop"
+                    recording = true
+                } else {
+                    editor.stopRecording()
+                    item.title = "Record"
+                    recording = false
+                }
+            }
+            R.id.action_play -> editor.play()
             R.id.action_undo -> editor.undo()
             R.id.action_redo -> editor.redo()
-            R.id.action_record -> editor.record()
-            R.id.action_play -> editor.play()
             R.id.action_bold -> editor.bold()
             R.id.action_italic -> editor.italic()
             R.id.action_underline -> editor.underline()
