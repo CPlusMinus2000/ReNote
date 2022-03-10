@@ -18,8 +18,11 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.preference.PreferenceManager
 import com.ckc.renote.databinding.ActivityMainBinding
+import androidx.room.Room
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
@@ -34,7 +37,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var handler: Handler = Handler() // used for autosave looper
     private var runnable: Runnable? = null // used for autosave looper
     private var delay = 10000 // used for autosave looper: 10000 = 10 seconds
-    private var currNote: Note? = null
+    private lateinit var currNote: Note
+    private lateinit var db: NoteRoomDatabase
+    private lateinit var noteDao: NoteDao
     private var recording: Boolean = false
     private lateinit var editor: Editor
     private var openSection = "data_structures"
@@ -47,33 +52,42 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             lines.fold("") { some, text -> "$some\n$text" }
         }
         currNote = Json.decodeFromString<Note>(contents)
-        editor.load(currNote!!.contents)
+        editor.load(currNote.contents)
+    }
+
+    private fun loadFromDatabase(sectionName: String) {
+        Log.d("loadFromDatabase", db.toString())
+        currNote = noteDao.findByName(sectionName)
+        Log.d("loadFromDatabase", currNote.toString())
+        editor.load(currNote.contents)
     }
 
     private fun saveFile() {
-        val filename = openSection.plus(fileType)
-        val file = File(this.filesDir, filename)
-        editor.save(file, currNote!!)
+        Log.d("EditorAddress", editor.toString())
+        Log.d("currNoteAddress", currNote.toString())
+        editor.save(currNote)
     }
 
-    private fun createFileIfDoesntExist(sectionName: String) {
-        val filename = sectionName.plus(fileType)
-        val file = File(this.filesDir, filename)
-        if (!file.exists()) {
+    private suspend fun createFileIfDoesntExist(sectionName: String) {
+        if (noteDao.noteExists(sectionName) == 0) {
             val currTime = System.currentTimeMillis()
             val note = Note("", sectionName, currTime, currTime, null)
-            file.writeText(Json.encodeToString(note), Charsets.UTF_8)
+            noteDao.insertAll(note)
         }
     }
 
     private fun createMissingFiles() {
         // this method is temporary
         // its only needed to make sure that the Friday's demo can run on any device
-        createFileIfDoesntExist("data_structures")
-        createFileIfDoesntExist("functional_programming")
-        createFileIfDoesntExist("object_oriented_programming")
-        createFileIfDoesntExist("selection_interview")
-        createFileIfDoesntExist("information_gathering_interview")
+        runBlocking {
+            launch {
+                createFileIfDoesntExist("data_structures")
+                createFileIfDoesntExist("functional_programming")
+                createFileIfDoesntExist("object_oriented_programming")
+                createFileIfDoesntExist("selection_interview")
+                createFileIfDoesntExist("information_gathering_interview")
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -129,9 +143,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
          * NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
          * NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
          * NavigationUI.setupWithNavController(navigationView, navController); */
+        this.db = NoteRoomDatabase.getDatabase(applicationContext)
+        this.noteDao = db.noteDao()
         createMissingFiles()
-        editor = Editor(findViewById(R.id.editor))
-        loadFromFile(openSection)
+        editor = Editor(findViewById(R.id.editor), db.noteDao())
+        loadFromDatabase(openSection)
         updatePageScrollView()
         expandableListView?.let { expandableListAdapter?.initiateExpandableListView(it) }
         settings()
@@ -344,6 +360,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     drawer.closeDrawer(GravityCompat.START)
                 }
 
+                saveFile()
+                val model = childList[headerList[groupPosition]]!![childPosition]
+                loadFromDatabase(model.url)
+                // Close the navigation drawer
+                val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
+                drawer.closeDrawer(GravityCompat.START)
             }
             false
         }
@@ -364,8 +386,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onResume() {
         handler.postDelayed(Runnable {
             handler.postDelayed(runnable!!, delay.toLong())
+            Log.d("Editor", editor.toString())
             saveFile() // autosave
-            //Toast.makeText(this@MainActivity, "This method will run every 10 seconds", Toast.LENGTH_SHORT).show()
+            // Toast.makeText(this@MainActivity, "This method will run every 10 seconds", Toast.LENGTH_SHORT).show()
         }.also { runnable = it }, delay.toLong())
         super.onResume()
     }

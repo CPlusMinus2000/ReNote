@@ -10,7 +10,8 @@ import java.io.File
 
 @SuppressLint("SetJavaScriptEnabled")
 class Editor(
-    private val webview: WebView
+    private val webview: WebView,
+    private val noteDao: NoteDao
 ) : WebViewClient() {
 
     private val undoManager: UndoManager = UndoManager()
@@ -44,10 +45,11 @@ class Editor(
         }
     }
 
-    fun save(file: File, currNote: Note) = webview.evaluateJavascript("document.getElementById('editor').innerHTML") {
+    fun save(currNote: Note) = webview.evaluateJavascript("document.getElementById('editor').innerHTML") {
         currNote.contents = it
         currNote.lastEdited = System.currentTimeMillis()
-        file.writeText(Json.encodeToString(currNote), Charsets.UTF_8)
+        // file.writeText(Json.encodeToString(currNote), Charsets.UTF_8)
+        noteDao.insert(currNote)
     }
 
     fun load(text: String) {
