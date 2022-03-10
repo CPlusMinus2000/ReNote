@@ -10,6 +10,9 @@ interface NoteDao {
     @Query("SELECT * FROM notes WHERE name IN (:noteNames)")
     fun loadAllByNames(noteNames: List<String>): List<Note>
 
+    @Query("SELECT * FROM notebooks ORDER BY order asc")
+    fun loadNotebooksInOrder(): List<Notebook>
+
     @Query("SELECT * FROM notes WHERE name LIKE :name LIMIT 1")
     fun findByName(name: String): Note
 
