@@ -1,13 +1,16 @@
 package com.ckc.renote
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ExpandableListView
 import android.widget.ExpandableListView.OnGroupClickListener
+import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -86,6 +89,28 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         prepareMenuData()
         populateExpandableList()
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
+
+        drawer.addDrawerListener(object : DrawerLayout.DrawerListener {
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+                Log.i("drawer", "onDrawerSlide");
+            }
+
+            override fun onDrawerOpened(drawerView: View) {
+                Log.i("drawer", "onDrawerOpened")
+
+                // TO IMPLEMENT: collapse the keyboard when drawer opens
+            }
+
+            override fun onDrawerClosed(drawerView: View) {
+                Log.i("drawer", "onDrawerClosed")
+            }
+
+            override fun onDrawerStateChanged(newState: Int) {
+                expandableListAdapter?.updateGUI()
+                Log.i("drawer", "onDrawerStateChanged");
+            }
+        })
+
         val toggle = ActionBarDrawerToggle(
             this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
         )
@@ -108,7 +133,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         loadFromFile(openSection)
         updatePageScrollView()
 
-        //window.statusBarColor = ContextCompat.getColor(this, R.color.dark_red)
+        expandableListView?.let { expandableListAdapter?.initiateExpandableListView(it) }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -171,11 +196,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun prepareMenuData() {
+        val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
         var menuModel = MenuModel(
             "Physics",
             isGroup = true,
             hasChildren = false,
-            "physics"
+            "physics",
+            drawer
         ) //Menu of Android Tutorial. No sub menus
         headerList.add(menuModel)
         var childModelsList: MutableList<MenuModel> = ArrayList()
@@ -183,41 +210,46 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             "+ new section",
             isGroup = false,
             hasChildren = false,
-            "information_gathering_interview"
+            "information_gathering_interview",
+            drawer
         )
         childModelsList.add(childModel)
         if (!menuModel.hasChildren) {
             childList[menuModel] = null
         }
-        menuModel = MenuModel("Computer Science", isGroup = true, hasChildren = true, "") //Menu of Java Tutorials
+        menuModel = MenuModel("Computer Science", isGroup = true, hasChildren = true, "", drawer) //Menu of Java Tutorials
         childModelsList = ArrayList()
         headerList.add(menuModel)
         childModel = MenuModel(
             "Data Structures",
             isGroup = false,
             hasChildren = false,
-            "data_structures"
+            "data_structures",
+            drawer
         )
         childModelsList.add(childModel)
         childModel = MenuModel(
             "Functional Programming",
             isGroup = false,
             hasChildren = false,
-            "functional_programming"
+            "functional_programming",
+            drawer
         )
         childModelsList.add(childModel)
         childModel = MenuModel(
             "Object-Oriented Programming",
             isGroup = false,
             hasChildren = false,
-            "object_oriented_programming"
+            "object_oriented_programming",
+            drawer
         )
         childModelsList.add(childModel)
         childModel = MenuModel(
             "+ new section",
             isGroup = false,
             hasChildren = false,
-            "information_gathering_interview"
+            "information_gathering_interview",
+            drawer
         )
         childModelsList.add(childModel)
         if (menuModel.hasChildren) {
@@ -225,37 +257,41 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             childList[menuModel] = childModelsList
         }
         childModelsList = ArrayList()
-        menuModel = MenuModel("Public Speaking", isGroup = true, hasChildren = true, "") //Menu of Python Tutorials
+        menuModel = MenuModel("Public Speaking", isGroup = true, hasChildren = true, "", drawer) //Menu of Python Tutorials
         headerList.add(menuModel)
         childModel = MenuModel(
             "Selection Interview",
             isGroup = false,
             hasChildren = false,
-            "selection_interview"
+            "selection_interview",
+            drawer
         )
         childModelsList.add(childModel)
         childModel = MenuModel(
             "Information-Gathering Interview",
             isGroup = false,
             hasChildren = false,
-            "information_gathering_interview"
+            "information_gathering_interview",
+            drawer
         )
         childModelsList.add(childModel)
         childModel = MenuModel(
             "+ new section",
             isGroup = false,
             hasChildren = false,
-            "information_gathering_interview"
+            "information_gathering_interview",
+            drawer
         )
         childModelsList.add(childModel)
         if (menuModel.hasChildren) {
             childList[menuModel] = childModelsList
         }
         menuModel = MenuModel(
-            "+ new textbook",
+            "+ new notebook",
             isGroup = true,
             hasChildren = false,
-            "physics"
+            "physics",
+            drawer
         ) //Menu of Android Tutorial. No sub menus
         headerList.add(menuModel)
         if (!menuModel.hasChildren) {
@@ -293,12 +329,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         expandableListView!!.setOnChildClickListener { _, _, groupPosition, childPosition, _ ->
             if (childList[headerList[groupPosition]] != null) {
-                saveFile()
-                val model = childList[headerList[groupPosition]]!![childPosition]
-                loadFromFile(model.url)
-                // Close the navigation drawer
-                val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
-                drawer.closeDrawer(GravityCompat.START)
+                val childView: View? = expandableListAdapter!!.getChild(groupPosition, childPosition)?.view
+                val txtListChild = childView?.findViewById<TextView>(R.id.lblListItem)
+                val actualText: String = txtListChild?.text.toString()
+                if (actualText == "+ new section") {
+                    expandableListAdapter!!.createNewSection()
+                } else {
+                    saveFile()
+                    val model = childList[headerList[groupPosition]]!![childPosition]
+                    loadFromFile(model.url)
+                    // Close the navigation drawer
+                    val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
+                    drawer.closeDrawer(GravityCompat.START)
+                }
+
             }
             false
         }
@@ -329,5 +373,4 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onPause()
         handler.removeCallbacks(runnable!!)
     }
-
 }

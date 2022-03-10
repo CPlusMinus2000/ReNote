@@ -2,17 +2,13 @@ package com.ckc.renote
 
 import android.app.AlertDialog
 import android.content.Context
-import android.graphics.Color
 import android.graphics.Typeface
-import android.graphics.drawable.GradientDrawable
+import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseExpandableListAdapter
-import android.widget.ExpandableListView
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import androidx.core.content.ContextCompat
 
 
@@ -31,12 +27,8 @@ open class ExpandableListAdapter(
         expandableListView = view
     }
 
-
     fun updateGUI() {
         Log.w("updateGUI", "Update GUI called")
-
-
-
         var newNotebookBackground = ContextCompat.getDrawable(context, R.drawable.new_notebook_button)
         var newSectionBackground = ContextCompat.getDrawable(context, R.drawable.new_section_button)
 
@@ -111,14 +103,14 @@ open class ExpandableListAdapter(
                 builder.setMessage("Do you wish to delete ".plus(actualText).plus("?\n" +
                         "This action cannot be undone."))
                 builder.setCancelable(false)
-                builder.setPositiveButton("Yes") {
+                builder.setPositiveButton("Delete") {
                         dialog, id ->
                     //val child: List<String> =
                     //    laptopCollections.get(laptops.get(groupPosition))
                     //child.remove(childPosition)
                     notifyDataSetChanged()
                 }
-                builder.setNegativeButton("No") {
+                builder.setNegativeButton("Cancel") {
                         dialog, id -> dialog.cancel()
                 }
                 val alertDialog = builder.create()
@@ -166,14 +158,14 @@ open class ExpandableListAdapter(
                 builder.setMessage("Do you wish to delete ".plus(actualText).plus("?\n" +
                         "This action cannot be undone."))
                 builder.setCancelable(false)
-                builder.setPositiveButton("Yes") {
+                builder.setPositiveButton("Delete") {
                         dialog, id ->
                     //val child: List<String> =
                     //    laptopCollections.get(laptops.get(groupPosition))
                     //child.remove(childPosition)
                     notifyDataSetChanged()
                 }
-                builder.setNegativeButton("No") {
+                builder.setNegativeButton("Cancel") {
                         dialog, id -> dialog.cancel()
                 }
                 val alertDialog = builder.create()
@@ -189,6 +181,16 @@ open class ExpandableListAdapter(
 
     override fun isChildSelectable(groupPosition: Int, childPosition: Int) = true
 
+    override fun onGroupCollapsed (groupPosition: Int) {
+        super.onGroupCollapsed(groupPosition)
+        val groupView: View? = getGroup(groupPosition)?.view
+        val lblListHeader = groupView?.findViewById<TextView>(R.id.lblListHeader)
+        val actualText: String = lblListHeader?.text.toString()
+        if (actualText == "+ new notebook") {
+            createNewNotebook()
+        }
+    }
+
     override fun onGroupExpanded (groupPosition: Int) {
         if (collapseOtherGroupsWhenGroupExpands) {
             for (gp in 0 until groupCount) {
@@ -198,6 +200,38 @@ open class ExpandableListAdapter(
             }
         }
         super.onGroupExpanded(groupPosition)
+        val groupView: View? = getGroup(groupPosition)?.view
+        val lblListHeader = groupView?.findViewById<TextView>(R.id.lblListHeader)
+        val actualText: String = lblListHeader?.text.toString()
+        if (actualText == "+ new notebook") {
+            createNewNotebook()
+        }
+    }
+
+    fun textInputDialog(message: String): String {
+        var input_text = ""
+        val builder = AlertDialog.Builder(context)
+        builder.setTitle(message)
+        val input = EditText(context)
+        input.inputType = InputType.TYPE_CLASS_TEXT
+        builder.setView(input)
+        builder.setPositiveButton(
+            "Create"
+        ) { dialog, which -> input_text = input.text.toString() }
+        builder.setNegativeButton(
+            "Cancel"
+        ) { dialog, which -> dialog.cancel() }
+        builder.show()
+        return input_text
+    }
+
+
+    fun createNewSection() {
+        var sectionName = textInputDialog("Enter the section title:")
+    }
+
+    private fun createNewNotebook() {
+        var notebookName = textInputDialog("Enter the notebook title:")
     }
 
 }
