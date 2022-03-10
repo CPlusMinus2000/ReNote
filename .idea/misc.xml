@@ -3,6 +3,9 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/drawable/ic_baseline_more_vert_24.xml" value="0.32" />
+        <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/drawable/new_notebook_button.xml" value="0.379" />
+        <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/drawable/new_section_button.xml" value="0.379" />
         <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/layout/activity_main.xml" value="0.17824074074074073" />
         <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/layout/activity_main2.xml" value="0.322463768115942" />
         <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/layout/app_bar_main.xml" value="0.2717391304347826" />
@@ -10,12 +13,15 @@
         <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/layout/fragment_gallery.xml" value="0.322463768115942" />
         <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/layout/fragment_home.xml" value="0.322463768115942" />
         <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/layout/fragment_slideshow.xml" value="0.2717391304347826" />
-        <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/layout/list_group_child.xml" value="0.4" />
-        <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/layout/list_group_header.xml" value="0.4" />
+        <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/layout/list_group_child.xml" value="0.1" />
+        <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/layout/list_group_child_new_section.xml" value="0.4" />
+        <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/layout/list_group_header.xml" value="0.1" />
+        <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/layout/list_group_header_new_notebook.xml" value="0.4" />
         <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/layout/nav_header_main.xml" value="0.2717391304347826" />
         <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/layout/page.xml" value="0.4" />
         <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/layout/page_scrollview.xml" value="0.26657410621312044" />
         <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/layout/settings_activity.xml" value="0.4" />
+        <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/layout/test.xml" value="0.4" />
         <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/menu/activity_main_drawer.xml" value="0.4" />
         <entry key="..\:/Projects/cs398-cadams-cotlin-crew/new/app/src/main/res/menu/main.xml" value="0.4" />
         <entry key="..\:/Users/hcoli/OneDrive - University of Waterloo/Desktop/Schoolwork/UWaterloo Course Materials/Computer Science/CS 398 Winter 2022 - Course Materials/cs398-cadams-cotlin-crew/app/src/main/res/layout/activity_main.xml" value="0.26171875" />

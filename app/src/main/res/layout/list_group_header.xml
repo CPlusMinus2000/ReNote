@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:padding="10dp" >
 
     <TextView
         android:id="@+id/lblListHeader"
@@ -11,6 +12,22 @@
         android:gravity="center_vertical"
         android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
         android:paddingRight="?attr/listPreferredItemPaddingRight"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
         android:textColor="#1f2124"
-        android:textSize="16sp" />
-</LinearLayout>
+        android:textSize="16sp"
+        android:background="@drawable/new_notebook_button"/>
+
+    <ImageView
+        android:id="@+id/options_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/lblListHeader"
+        android:layout_alignBottom="@+id/lblListHeader"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="9dp"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/ic_baseline_more_vert_24"
+        app:srcCompat="@drawable/ic_baseline_more_vert_24" />
+
+</RelativeLayout>
