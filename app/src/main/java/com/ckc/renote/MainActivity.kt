@@ -33,9 +33,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var handler: Handler = Handler() // used for autosave looper
     private var runnable: Runnable? = null // used for autosave looper
     private var delay = 10000 // used for autosave looper: 10000 = 10 seconds
-    private var currNote: Note? = null
-    private var db: NoteRoomDatabase? = null
-    private var noteDao: NoteDao? = null
+    private lateinit var currNote: Note
+    private lateinit var db: NoteRoomDatabase
+    private lateinit var noteDao: NoteDao
     private var recording: Boolean = false
     private lateinit var editor: Editor
     private var openSection = "data_structures"
@@ -48,27 +48,27 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             lines.fold("") { some, text -> "$some\n$text" }
         }
         currNote = Json.decodeFromString<Note>(contents)
-        editor.load(currNote!!.contents)
+        editor.load(currNote.contents)
     }
 
     private fun loadFromDatabase(sectionName: String) {
         Log.d("loadFromDatabase", db.toString())
-        currNote = noteDao!!.findByName(sectionName)
+        currNote = noteDao.findByName(sectionName)
         Log.d("loadFromDatabase", currNote.toString())
-        editor.load(currNote!!.contents)
+        editor.load(currNote.contents)
     }
 
     private fun saveFile() {
         Log.d("EditorAddress", editor.toString())
         Log.d("currNoteAddress", currNote.toString())
-        editor.save(currNote!!)
+        editor.save(currNote)
     }
 
     private suspend fun createFileIfDoesntExist(sectionName: String) {
-        if (noteDao!!.noteExists(sectionName) == 0) {
+        if (noteDao.noteExists(sectionName) == 0) {
             val currTime = System.currentTimeMillis()
             val note = Note("", sectionName, currTime, currTime, null)
-            noteDao!!.insertAll(note)
+            noteDao.insertAll(note)
         }
     }
 
@@ -119,9 +119,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
          * NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
          * NavigationUI.setupWithNavController(navigationView, navController); */
         this.db = NoteRoomDatabase.getDatabase(applicationContext)
-        this.noteDao = db!!.noteDao()
+        this.noteDao = db.noteDao()
         createMissingFiles()
-        editor = Editor(findViewById(R.id.editor), db!!.noteDao())
+        editor = Editor(findViewById(R.id.editor), db.noteDao())
         loadFromDatabase(openSection)
         updatePageScrollView()
 

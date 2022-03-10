@@ -49,7 +49,7 @@ class Editor(
         currNote.contents = it
         currNote.lastEdited = System.currentTimeMillis()
         // file.writeText(Json.encodeToString(currNote), Charsets.UTF_8)
-        noteDao!!.insert(currNote)
+        noteDao.insert(currNote)
     }
 
     fun load(text: String) {
