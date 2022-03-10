@@ -1,5 +1,6 @@
 package com.ckc.renote
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -87,6 +88,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    @SuppressLint("WrongThread")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -141,7 +143,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
          * NavigationUI.setupWithNavController(navigationView, navController); */
         this.db = NoteRoomDatabase.getDatabase(applicationContext)
         this.noteDao = db.noteDao()
-        println(noteDao.loadNotebooksInOrder())
+        db.clearAllTables()
         createMissingFiles()
         editor = Editor(findViewById(R.id.editor), db.noteDao())
         loadFromDatabase(openSection)
@@ -350,7 +352,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 } else {
                     saveFile()
                     val model = childList[headerList[groupPosition]]!![childPosition]
-                    loadFromFile(model.url)
+                    loadFromDatabase(model.url)
                     // Close the navigation drawer
                     val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
                     drawer.closeDrawer(GravityCompat.START)
