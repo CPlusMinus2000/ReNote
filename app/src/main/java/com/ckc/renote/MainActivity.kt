@@ -1,6 +1,5 @@
 package com.ckc.renote
 
-import android.app.AlertDialog
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -19,17 +18,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.preference.PreferenceManager
-import com.ckc.renote.databinding.ActivityMainBinding
-import androidx.room.Room
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.io.File
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -54,7 +48,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val contents = this.openFileInput(openSection.plus(fileType)).bufferedReader().useLines { lines ->
             lines.fold("") { some, text -> "$some\n$text" }
         }
-        currNote = Json.decodeFromString<Note>(contents)
+        currNote = Json.decodeFromString(contents)
         editor.load(currNote.contents)
     }
 
