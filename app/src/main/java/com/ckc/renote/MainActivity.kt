@@ -133,7 +133,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         loadFromFile(openSection)
         updatePageScrollView()
         expandableListView?.let { expandableListAdapter?.initiateExpandableListView(it) }
-        settings()
+        supportActionBar?.setDisplayShowTitleEnabled(false); // hides an app name in the toolbar
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -372,12 +372,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onPause() {
         super.onPause()
         handler.removeCallbacks(runnable!!)
-    }
-
-    private fun settings() {
-        //val preferences = PreferenceManager.getDefaultSharedPreferences(this)
-        //val signature = preferences.getString("signature", "")
-
     }
 
     fun Activity.hideKeyboard() {
