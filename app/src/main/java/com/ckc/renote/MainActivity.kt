@@ -1,17 +1,11 @@
 package com.ckc.renote
 
 import android.content.Intent
-import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Handler
-import android.text.Html
-import android.text.Spannable
-import android.text.style.StyleSpan
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.EditText
 import android.widget.ExpandableListView
 import android.widget.ExpandableListView.OnGroupClickListener
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -19,49 +13,51 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import java.io.File
-
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private var expandableListAdapter: ExpandableListAdapter? = null
     private var expandableListView: ExpandableListView? = null
-    var headerList: MutableList<MenuModel> = ArrayList()
-    var childList = HashMap<MenuModel, List<MenuModel>?>()
-    var handler: Handler = Handler() // used for autosave looper
-    var runnable: Runnable? = null // used for autosave looper
+    private var headerList: MutableList<MenuModel> = ArrayList()
+    private var childList = HashMap<MenuModel, List<MenuModel>?>()
+    private var handler: Handler = Handler() // used for autosave looper
+    private var runnable: Runnable? = null // used for autosave looper
     private var delay = 10000 // used for autosave looper: 10000 = 10 seconds
+    private var currNote: Note? = null
+    private var recording: Boolean = false
+    private lateinit var editor: Editor
     private var openSection = "data_structures"
-    private var fileType = ".txt"
+    private var fileType = ".json"
 
+    @OptIn(ExperimentalSerializationApi::class)
     private fun loadFromFile(sectionName: String) {
         openSection = sectionName
-        var contents = this.openFileInput(openSection.plus(fileType)).bufferedReader().useLines { lines ->
-            lines.fold("") { some, text ->
-                "$some\n$text"
-            }
+        val contents = this.openFileInput(openSection.plus(fileType)).bufferedReader().useLines { lines ->
+            lines.fold("") { some, text -> "$some\n$text" }
         }
-        val editor: EditText = findViewById(R.id.edit_text1)
-        editor.setText(Html.fromHtml("$contents", Html.FROM_HTML_MODE_COMPACT))
-        //editor.setText(contents)
+        currNote = Json.decodeFromString<Note>(contents)
+        editor.load(currNote!!.contents)
     }
 
     private fun saveFile() {
-        val editor: EditText = findViewById(R.id.edit_text1)
-        val text = Html.toHtml(editor.text, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
-        //editor.setText(Html.fromHtml("$text<p><u>haha</u></p>", Html.FROM_HTML_MODE_COMPACT))
         val filename = openSection.plus(fileType)
-        var file = File(this.filesDir, filename)
-        file.writeText(text, Charsets.UTF_8)
+        val file = File(this.filesDir, filename)
+        editor.save(file, currNote!!)
     }
 
     private fun createFileIfDoesntExist(sectionName: String) {
         val filename = sectionName.plus(fileType)
-        var file = File(this.filesDir, filename)
+        val file = File(this.filesDir, filename)
         if (!file.exists()) {
-            file.writeText("", Charsets.UTF_8)
+            val currTime = System.currentTimeMillis()
+            val note = Note("", sectionName, currTime, currTime, null)
+            file.writeText(Json.encodeToString(note), Charsets.UTF_8)
         }
     }
 
@@ -82,7 +78,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         val fab = findViewById<FloatingActionButton>(R.id.fab)
-        fab.setOnClickListener { _ ->
+        fab.setOnClickListener {
             startActivity(Intent(this@MainActivity, MainActivity2::class.java))
         }
 
@@ -90,26 +86,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         prepareMenuData()
         populateExpandableList()
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
-
-        drawer.addDrawerListener(object : DrawerListener {
-            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-                Log.i("drawer", "onDrawerSlide");
-            }
-
-            override fun onDrawerOpened(drawerView: View) {
-                Log.i("drawer", "onDrawerOpened")
-            }
-
-            override fun onDrawerClosed(drawerView: View) {
-                Log.i("drawer", "onDrawerClosed")
-            }
-
-            override fun onDrawerStateChanged(newState: Int) {
-                expandableListAdapter?.updateGUI()
-                Log.i("drawer", "onDrawerStateChanged");
-            }
-        })
-
         val toggle = ActionBarDrawerToggle(
             this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
         )
@@ -128,14 +104,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
          * NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
          * NavigationUI.setupWithNavController(navigationView, navController); */
         createMissingFiles()
+        editor = Editor(findViewById(R.id.editor))
         loadFromFile(openSection)
         updatePageScrollView()
 
-        Log.i("onCreate", "before assigning view")
-
-        expandableListView?.let { expandableListAdapter?.initiateExpandableListView(it) }
-
-        Log.i("onCreate", "after assigning view")
+        //window.statusBarColor = ContextCompat.getColor(this, R.color.dark_red)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -145,50 +118,38 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_bold -> {
-                val editor: EditText = findViewById(R.id.edit_text1)
-                val start = editor.selectionStart
-                val end = editor.selectionEnd
-                val ss = editor.text.getSpans(start, end, StyleSpan::class.java)
-                for (span in ss) {
-                    if (span.style == Typeface.BOLD) {
-                        editor.text.removeSpan(span)
-                        return true
-                    }
+        when (item.itemId) {
+            R.id.action_record -> {
+                if (!recording) {
+                    editor.startRecording()
+                    item.title = "Stop"
+                    recording = true
+                } else {
+                    editor.stopRecording()
+                    item.title = "Record"
+                    recording = false
                 }
-                editor.text.setSpan(StyleSpan(Typeface.BOLD), start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
-                true
             }
-            R.id.action_italic -> {
-                val editor: EditText = findViewById(R.id.edit_text1)
-                val start = editor.selectionStart
-                val end = editor.selectionEnd
-                val ss = editor.text.getSpans(start, end, StyleSpan::class.java)
-                for (span in ss) {
-                    if (span.style == Typeface.ITALIC) {
-                        editor.text.removeSpan(span)
-                        return true
-                    }
-                }
-                editor.text.setSpan(StyleSpan(Typeface.ITALIC), start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
-                true
-            }
-            R.id.action_save -> {
-                saveFile()
-                true
-            }
+            R.id.action_play -> editor.play()
+            R.id.action_undo -> editor.undo()
+            R.id.action_redo -> editor.redo()
+            R.id.action_bold -> editor.bold()
+            R.id.action_italic -> editor.italic()
+            R.id.action_underline -> editor.underline()
+            R.id.action_strikethrough -> editor.strikeThrough()
+            R.id.action_increase_font_size -> editor.increaseFontSize()
+            R.id.action_decrease_font_size -> editor.decreaseFontSize()
+            R.id.action_save -> saveFile()
             R.id.action_settings -> {
                 val intent = Intent(this, SettingsActivity::class.java)
                 startActivity(intent)
-                true
             }
-            else -> super.onOptionsItemSelected(item)
+            else -> return super.onOptionsItemSelected(item)
         }
+        return true
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-
         // Handle navigation view item clicks here.
         /**
          * if (id == R.id.nav_camera) {
@@ -210,101 +171,91 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun prepareMenuData() {
-        val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
         var menuModel = MenuModel(
             "Physics",
-            true,
-            true,
-            "physics",
-            drawer
+            isGroup = true,
+            hasChildren = false,
+            "physics"
         ) //Menu of Android Tutorial. No sub menus
         headerList.add(menuModel)
         var childModelsList: MutableList<MenuModel> = ArrayList()
         var childModel = MenuModel(
             "+ new section",
-            false,
-            false,
-            "information_gathering_interview",
-            drawer
+            isGroup = false,
+            hasChildren = false,
+            "information_gathering_interview"
         )
         childModelsList.add(childModel)
         if (!menuModel.hasChildren) {
             childList[menuModel] = null
         }
+        menuModel = MenuModel("Computer Science", isGroup = true, hasChildren = true, "") //Menu of Java Tutorials
         childModelsList = ArrayList()
-        menuModel = MenuModel("Computer Science", true, true, "", drawer) //Menu of Java Tutorials
         headerList.add(menuModel)
         childModel = MenuModel(
             "Data Structures",
-            false,
-            false,
-            "data_structures",
-            drawer
+            isGroup = false,
+            hasChildren = false,
+            "data_structures"
         )
         childModelsList.add(childModel)
         childModel = MenuModel(
             "Functional Programming",
-            false,
-            false,
-            "functional_programming",
-            drawer
+            isGroup = false,
+            hasChildren = false,
+            "functional_programming"
         )
         childModelsList.add(childModel)
         childModel = MenuModel(
             "Object-Oriented Programming",
-            false,
-            false,
-            "object_oriented_programming",
-            drawer
+            isGroup = false,
+            hasChildren = false,
+            "object_oriented_programming"
         )
         childModelsList.add(childModel)
         childModel = MenuModel(
             "+ new section",
-            false,
-            false,
-            "information_gathering_interview",
-            drawer
+            isGroup = false,
+            hasChildren = false,
+            "information_gathering_interview"
         )
         childModelsList.add(childModel)
         if (menuModel.hasChildren) {
+            //Log.d("API123","here");
             childList[menuModel] = childModelsList
         }
         childModelsList = ArrayList()
-        menuModel = MenuModel("Public Speaking", true, true, "", drawer) //Menu of Python Tutorials
+        menuModel = MenuModel("Public Speaking", isGroup = true, hasChildren = true, "") //Menu of Python Tutorials
         headerList.add(menuModel)
         childModel = MenuModel(
             "Selection Interview",
-            false,
-            false,
-            "selection_interview",
-            drawer
+            isGroup = false,
+            hasChildren = false,
+            "selection_interview"
         )
         childModelsList.add(childModel)
         childModel = MenuModel(
             "Information-Gathering Interview",
-            false,
-            false,
-            "information_gathering_interview",
-            drawer
+            isGroup = false,
+            hasChildren = false,
+            "information_gathering_interview"
         )
         childModelsList.add(childModel)
         childModel = MenuModel(
             "+ new section",
-            false,
-            false,
-            "information_gathering_interview",
-            drawer
+            isGroup = false,
+            hasChildren = false,
+            "information_gathering_interview"
         )
         childModelsList.add(childModel)
         if (menuModel.hasChildren) {
             childList[menuModel] = childModelsList
         }
         menuModel = MenuModel(
-            "+ new notebook",
-            true,
-            false,
-            "physics",
-            drawer
+            "+ new textbook",
+            isGroup = true,
+            hasChildren = false,
+            "physics"
         ) //Menu of Android Tutorial. No sub menus
         headerList.add(menuModel)
         if (!menuModel.hasChildren) {
@@ -315,7 +266,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun populateExpandableList() {
         expandableListAdapter = ExpandableListAdapter(this, headerList, childList)
         expandableListView!!.setAdapter(expandableListAdapter)
-        expandableListView!!.setOnGroupClickListener(OnGroupClickListener { parent, v, groupPosition, id ->
+        expandableListView!!.setOnGroupClickListener(OnGroupClickListener { _, _, groupPosition, _ ->
             if (headerList[groupPosition].isGroup) {
                 if (!headerList[groupPosition].hasChildren) {
 
@@ -340,20 +291,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             false
         })
 
-        expandableListView!!.setOnChildClickListener { parent, v, groupPosition, childPosition, id ->
+        expandableListView!!.setOnChildClickListener { _, _, groupPosition, childPosition, _ ->
             if (childList[headerList[groupPosition]] != null) {
-                Log.w("myApp", "small tap");
                 saveFile()
                 val model = childList[headerList[groupPosition]]!![childPosition]
-                loadFromFile(model.url);
+                loadFromFile(model.url)
                 // Close the navigation drawer
                 val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
                 drawer.closeDrawer(GravityCompat.START)
-
             }
             false
         }
-
     }
 
     private fun updatePageScrollView() {
@@ -372,6 +320,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         handler.postDelayed(Runnable {
             handler.postDelayed(runnable!!, delay.toLong())
             saveFile() // autosave
+            //Toast.makeText(this@MainActivity, "This method will run every 10 seconds", Toast.LENGTH_SHORT).show()
         }.also { runnable = it }, delay.toLong())
         super.onResume()
     }
@@ -380,7 +329,5 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onPause()
         handler.removeCallbacks(runnable!!)
     }
-
-
 
 }

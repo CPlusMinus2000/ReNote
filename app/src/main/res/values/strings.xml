@@ -29,4 +29,10 @@
     <string name="attachment_title">Download incoming attachments</string>
     <string name="attachment_summary_on">Automatically download attachments for incoming emails</string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="increase_font_size">Increase Font Size</string>
+    <string name="decrease_font_size">Decrease Font Size</string>
+    <string name="underline">Underline</string>
+    <string name="strikethrough">Strikethrough</string>
+    <string name="undo">Undo</string>
+    <string name="redo">Redo</string>
 </resources>
