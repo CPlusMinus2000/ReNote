@@ -1,6 +1,8 @@
 package com.ckc.renote
 
 import android.app.AlertDialog
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -8,6 +10,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.ExpandableListView
 import android.widget.ExpandableListView.OnGroupClickListener
 import android.widget.TextView
@@ -107,13 +110,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         drawer.addDrawerListener(object : DrawerLayout.DrawerListener {
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-                Log.i("drawer", "onDrawerSlide");
+                Log.i("drawer", "onDrawerSlide")
             }
 
             override fun onDrawerOpened(drawerView: View) {
                 Log.i("drawer", "onDrawerOpened")
-
-                // TO IMPLEMENT: collapse the keyboard when drawer opens
+                hideKeyboard()
             }
 
             override fun onDrawerClosed(drawerView: View) {
@@ -122,7 +124,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             override fun onDrawerStateChanged(newState: Int) {
                 expandableListAdapter?.updateGUI()
-                Log.i("drawer", "onDrawerStateChanged");
+                Log.i("drawer", "onDrawerStateChanged")
             }
         })
 
@@ -150,7 +152,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         loadFromDatabase(openSection)
         updatePageScrollView()
         expandableListView?.let { expandableListAdapter?.initiateExpandableListView(it) }
-        settings()
+        supportActionBar?.setDisplayShowTitleEnabled(false); // hides an app name in the toolbar
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -398,9 +400,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         handler.removeCallbacks(runnable!!)
     }
 
-    private fun settings() {
-        //val preferences = PreferenceManager.getDefaultSharedPreferences(this)
-        //val signature = preferences.getString("signature", "")
+    fun Activity.hideKeyboard() {
+        hideKeyboard(currentFocus ?: View(this))
+    }
 
+    private fun Context.hideKeyboard(view: View) {
+        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
 }

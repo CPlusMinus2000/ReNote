@@ -17,6 +17,7 @@ class SettingsActivity : AppCompatActivity() {
                 .commit()
         }
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = "Settings"; // changes text displayed in the toolbar
     }
 
     class SettingsFragment : PreferenceFragmentCompat() {
