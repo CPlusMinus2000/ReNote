@@ -133,7 +133,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         loadFromFile(openSection)
         updatePageScrollView()
         expandableListView?.let { expandableListAdapter?.initiateExpandableListView(it) }
-        supportActionBar?.setDisplayShowTitleEnabled(false); // hides an app name in the toolbar
+        supportActionBar?.setDisplayShowTitleEnabled(false) // hides an app name in the toolbar
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -253,7 +253,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         )
         childModelsList.add(childModel)
         if (menuModel.hasChildren) {
-            //Log.d("API123","here");
             childList[menuModel] = childModelsList
         }
         childModelsList = ArrayList()
