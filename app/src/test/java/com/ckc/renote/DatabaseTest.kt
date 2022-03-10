@@ -10,11 +10,12 @@ fun getRandomString(length: Int) : String {
 }
 
 class DatabaseTest : TestCase() {
-    private var db: Database? = null
+    private var db: RawDatabase? = null
 
     public override fun setUp() {
         super.setUp()
-        db = Database("jdbc:sqlite:test.db")
+        db = RawDatabase()
+        db!!.init("jdbc:sqlite:test.db")
     }
 
     public override fun tearDown() {
@@ -48,6 +49,19 @@ class DatabaseTest : TestCase() {
         assertEquals(2, rets.size)
         assertEquals(testNote1, rets[0])
         assertEquals(testNote2, rets[1])
+    }
+
+    fun testGetNoteByName() {
+        val randomName = getRandomString(10)
+        val testNote = Note(
+            "This is a test", randomName, System.currentTimeMillis(),
+            System.currentTimeMillis(), null
+        )
+
+        db!!.insertNote(testNote)
+        assert(db!!.checkIfNameExists(randomName))
+        val ret = db!!.getNoteByName(randomName)
+        assertEquals(testNote, ret)
     }
 
     fun testSearchWithText() {

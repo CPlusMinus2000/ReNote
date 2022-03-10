@@ -1,18 +1,21 @@
 package com.ckc.renote
 
+import android.util.Log
 import java.sql.*
 
-class Database(url: String, private val tableName: String = "Notes") {
+class RawDatabase() {
     // Interface class for accessing the database
     private var conn: Connection? = null
+    private var tableName: String = "Notes"
 
-    init {
+    /* init {
+        Log.d("Database", "Database getting created")
         try {
             conn = DriverManager.getConnection(url)
         } catch (ex: SQLException) {
             println(ex.message)
         }
-
+        Log.d("lololXDXDXDXD", conn.toString())
         try {
             if (conn != null) {
                 val creation = "create table if not exists $tableName (" +
@@ -28,6 +31,29 @@ class Database(url: String, private val tableName: String = "Notes") {
                 println(results)
             }
         } catch (ex: SQLException) {
+            println(ex.message)
+        }
+    } */
+
+    fun init(url: String, tableName: String = "Notes") {
+        try {
+            this.tableName = tableName
+            Log.d("Database", "Database getting created")
+            conn = DriverManager.getConnection(url)
+            Log.d("lololXDXDXDXD", conn.toString())
+            val creation = "create table if not exists $tableName (" +
+                    "noteID integer primary key, " +
+                    "contents text not null, " +
+                    "name text not null, " +
+                    "creationTime int not null, " +
+                    "lastEdited int not null, " +
+                    "customOrder int);"
+
+            val request = conn!!.createStatement()
+            val results = request.executeUpdate(creation)
+            println(results)
+        } catch (ex: SQLException) {
+            ex.message?.let { Log.d("lololXDException", it) }
             println(ex.message)
         }
     }
@@ -83,6 +109,46 @@ class Database(url: String, private val tableName: String = "Notes") {
         }
 
         return ids
+    }
+
+    fun checkIfNameExists(name: String): Boolean {
+        var exists = false
+        try {
+            if (conn != null) {
+                val query = conn!!.createStatement()
+                val results = query.executeQuery("select * from $tableName where name = \"$name\";")
+                while (results.next()) {
+                    exists = true
+                }
+            }
+        } catch (ex: SQLException) {
+            println(ex.message)
+        }
+
+        return exists
+    }
+
+    fun getNoteByName(name: String): Note? {
+        var note: Note? = null
+        try {
+            if (conn != null) {
+                val query = conn!!.createStatement()
+                val res = query.executeQuery("select * from $tableName where name = \"$name\" limit 1;")
+                while (res.next()) {
+                    note = Note(
+                            res.getString("contents"),
+                            res.getString("name"),
+                            res.getLong("creationTime"),
+                            res.getLong("lastEdited"),
+                            if (res.getObject("customOrder") == null) null else res.getInt("customOrder")
+                    )
+                }
+            }
+        } catch (ex: SQLException) {
+            println(ex.message)
+        }
+
+        return note
     }
 
     fun selectWithId(id: Int): Note? {
