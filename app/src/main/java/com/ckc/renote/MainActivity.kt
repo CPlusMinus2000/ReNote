@@ -16,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.preference.PreferenceManager
+import com.ckc.renote.databinding.ActivityMainBinding
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import java.io.File
@@ -76,7 +78,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_main)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -132,8 +133,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         editor = Editor(findViewById(R.id.editor))
         loadFromFile(openSection)
         updatePageScrollView()
-
         expandableListView?.let { expandableListAdapter?.initiateExpandableListView(it) }
+        settings()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -372,5 +373,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onPause() {
         super.onPause()
         handler.removeCallbacks(runnable!!)
+    }
+
+    private fun settings() {
+        //val preferences = PreferenceManager.getDefaultSharedPreferences(this)
+        //val signature = preferences.getString("signature", "")
+
     }
 }

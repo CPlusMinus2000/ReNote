@@ -2,6 +2,7 @@ package com.ckc.renote
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Typeface
 import android.text.InputType
 import android.util.Log
@@ -10,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.core.content.ContextCompat
+import androidx.preference.PreferenceManager
 
 
 open class ExpandableListAdapter(
@@ -20,7 +22,7 @@ open class ExpandableListAdapter(
 ) : BaseExpandableListAdapter() {
 
     private lateinit var expandableListView: ExpandableListView
-    private var collapseOtherGroupsWhenGroupExpands = false
+    private val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
     fun initiateExpandableListView(view: ExpandableListView) {
         Log.i("initiateExpandableListView", "expandableListView IS BEING initialized")
@@ -192,6 +194,8 @@ open class ExpandableListAdapter(
     }
 
     override fun onGroupExpanded (groupPosition: Int) {
+        val collapseOtherGroupsWhenGroupExpands = preferences.getBoolean("collapse", false)
+
         if (collapseOtherGroupsWhenGroupExpands) {
             for (gp in 0 until groupCount) {
                 if (gp != groupPosition && expandableListView.isGroupExpanded(gp)) {
@@ -208,8 +212,8 @@ open class ExpandableListAdapter(
         }
     }
 
-    fun textInputDialog(message: String): String {
-        var input_text = ""
+    private fun textInputDialog(message: String): String {
+        var inputText = ""
         val builder = AlertDialog.Builder(context)
         builder.setTitle(message)
         val input = EditText(context)
@@ -217,12 +221,12 @@ open class ExpandableListAdapter(
         builder.setView(input)
         builder.setPositiveButton(
             "Create"
-        ) { dialog, which -> input_text = input.text.toString() }
+        ) { _, _ -> inputText = input.text.toString() }
         builder.setNegativeButton(
             "Cancel"
-        ) { dialog, which -> dialog.cancel() }
+        ) { dialog, _ -> dialog.cancel() }
         builder.show()
-        return input_text
+        return inputText
     }
 
 
