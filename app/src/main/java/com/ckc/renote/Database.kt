@@ -140,7 +140,8 @@ class RawDatabase() {
                             res.getString("name"),
                             res.getLong("creationTime"),
                             res.getLong("lastEdited"),
-                            if (res.getObject("customOrder") == null) null else res.getInt("customOrder")
+                            res.getInt("customOrder"),
+                        ""
                     )
                 }
             }
@@ -164,7 +165,8 @@ class RawDatabase() {
                         results.getString("name"),
                         results.getLong("creationTime"),
                         results.getLong("lastEdited"),
-                        if (results.getObject("customOrder") == null) null else results.getInt("customOrder")
+                        results.getInt("customOrder"),
+                        ""
                     )
                 }
             }
@@ -195,7 +197,8 @@ class RawDatabase() {
                             results.getString("name"),
                             results.getLong("creationTime"),
                             results.getLong("lastEdited"),
-                            if (results.getObject("customOrder") == null) null else results.getInt("customOrder")
+                            results.getInt("customOrder"),
+                            ""
                         )
                     )
                 }
@@ -222,7 +225,8 @@ class RawDatabase() {
                         results.getString("name"),
                         results.getLong("creationTime"),
                         results.getLong("lastEdited"),
-                        if (results.getObject("customOrder") == null) null else results.getInt("customOrder")
+                        results.getInt("customOrder"),
+                        ""
                     ))
                 }
             }

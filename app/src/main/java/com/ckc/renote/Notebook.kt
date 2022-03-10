@@ -7,5 +7,5 @@ import kotlinx.serialization.Serializable
 @Entity(tableName = "notebooks")
 data class Notebook(
     @PrimaryKey val name: String,
-    @ColumnInfo(name = "order") val order: Int
+    @ColumnInfo(name = "notebook_order") val order: Int
 )

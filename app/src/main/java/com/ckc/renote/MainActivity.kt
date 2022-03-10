@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private suspend fun createFileIfDoesntExist(sectionName: String) {
         if (noteDao.noteExists(sectionName) == 0) {
             val currTime = System.currentTimeMillis()
-            val note = Note("", sectionName, currTime, currTime, null)
+            val note = Note("", sectionName, currTime, currTime, noteDao.getMaxCustomOrder() + 1, "")
             noteDao.insertAll(note)
         }
     }
@@ -141,6 +141,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
          * NavigationUI.setupWithNavController(navigationView, navController); */
         this.db = NoteRoomDatabase.getDatabase(applicationContext)
         this.noteDao = db.noteDao()
+        println(noteDao.loadNotebooksInOrder())
         createMissingFiles()
         editor = Editor(findViewById(R.id.editor), db.noteDao())
         loadFromDatabase(openSection)

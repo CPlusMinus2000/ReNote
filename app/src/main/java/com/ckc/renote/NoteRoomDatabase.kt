@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 // Annotates class to be a Room Database with a table (entity) of the Word class
-@Database(entities = [Note::class], version = 1, exportSchema = false)
+@Database(entities = [Note::class, Notebook::class], version = 4, exportSchema = false)
 public abstract class NoteRoomDatabase : RoomDatabase() {
 
     abstract fun noteDao(): NoteDao
@@ -25,7 +25,10 @@ public abstract class NoteRoomDatabase : RoomDatabase() {
                     context.applicationContext,
                     NoteRoomDatabase::class.java,
                     "note_database"
-                ).allowMainThreadQueries().build()
+                )
+                    .allowMainThreadQueries()
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 // return instance
                 instance

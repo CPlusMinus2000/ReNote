@@ -30,7 +30,8 @@ class Sqlite(url: String, private val tableName: String = "Notes") {
         val contents = cursor.getString(cursor.getColumnIndex("contents"))
         val createTime = cursor.getLong(cursor.getColumnIndex("createTime"))
         val updateTime = cursor.getLong(cursor.getColumnIndex("updateTime"))
+        val customOrder = cursor.getInt(cursor.getColumnIndex("customOrder"))
         cursor.close()
-        return Note(contents, name, createTime, updateTime, null)
+        return Note(contents, name, createTime, updateTime, customOrder, "")
     }
 }
