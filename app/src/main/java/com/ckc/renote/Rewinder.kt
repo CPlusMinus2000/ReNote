@@ -3,6 +3,8 @@ package com.ckc.renote
 import android.os.Handler
 import android.os.Looper
 
+data class Recording(var times: MutableList<Long>, var states: MutableList<State>)
+
 class Rewinder {
     private lateinit var recording: Recording
     private var initialTime: Long = 0

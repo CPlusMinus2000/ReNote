@@ -35,7 +35,8 @@ class Editor(
         return super.shouldOverrideUrlLoading(view, request)
     }
 
-    fun setEditable(editable: Boolean) = webview.evaluateJavascript("document.getElementById('editor').contentEditable = $editable", null)
+    fun setEditable(editable: Boolean) = webview.evaluateJavascript(
+        "document.getElementById('editor').contentEditable = $editable", null)
 
     fun setContent(text: String) {
         webview.evaluateJavascript("document.getElementById('editor').innerHTML = \"$text\"") {

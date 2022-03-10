@@ -72,4 +72,31 @@ class DatabaseTest : TestCase() {
         assertEquals(testNote1, rets[0])
         assertEquals(testNote2, rets[1])
     }
+
+    fun testExecuteCustomQuery() {
+        val testTitle = getRandomString(10)
+        val testNote1 = Note(
+            "This is a test", testTitle, System.currentTimeMillis(),
+            System.currentTimeMillis(), null
+        )
+        val testNote2 = Note(
+            "This is another test", "lolol", System.currentTimeMillis(),
+            System.currentTimeMillis(), null
+        )
+        val testNote3 = Note(
+            "This is a tset", testTitle, System.currentTimeMillis(),
+            System.currentTimeMillis(), null
+        )
+
+        db!!.insertNotes(listOf(testNote1, testNote2, testNote3))
+        val rets = db!!.executeCustomQuery("SELECT * FROM Notes WHERE name = '$testTitle' order by NoteID asc;")
+
+        val titles = mutableListOf<String>()
+        while (rets!!.next()) {
+            titles.add(rets.getString("name"))
+        }
+        assertEquals(2, titles.size)
+        assertEquals(testNote1.name, titles[0])
+        assertEquals(testNote3.name, titles[0])
+    }
 }

@@ -39,9 +39,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun loadFromFile(sectionName: String) {
         openSection = sectionName
         val contents = this.openFileInput(openSection.plus(fileType)).bufferedReader().useLines { lines ->
-            lines.fold("") { some, text ->
-                "$some\n$text"
-            }
+            lines.fold("") { some, text -> "$some\n$text" }
         }
         currNote = Json.decodeFromString<Note>(contents)
         editor.load(currNote!!.contents)
@@ -80,7 +78,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         val fab = findViewById<FloatingActionButton>(R.id.fab)
-        fab.setOnClickListener { _ ->
+        fab.setOnClickListener {
             startActivity(Intent(this@MainActivity, MainActivity2::class.java))
         }
 
@@ -183,8 +181,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         var childModelsList: MutableList<MenuModel> = ArrayList()
         var childModel = MenuModel(
             "+ new section",
-            false,
-            false,
+            isGroup = false,
+            hasChildren = false,
             "information_gathering_interview"
         )
         childModelsList.add(childModel)
@@ -217,8 +215,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         childModelsList.add(childModel)
         childModel = MenuModel(
             "+ new section",
-            false,
-            false,
+            isGroup = false,
+            hasChildren = false,
             "information_gathering_interview"
         )
         childModelsList.add(childModel)
@@ -245,8 +243,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         childModelsList.add(childModel)
         childModel = MenuModel(
             "+ new section",
-            false,
-            false,
+            isGroup = false,
+            hasChildren = false,
             "information_gathering_interview"
         )
         childModelsList.add(childModel)
@@ -255,8 +253,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         menuModel = MenuModel(
             "+ new textbook",
-            true,
-            false,
+            isGroup = true,
+            hasChildren = false,
             "physics"
         ) //Menu of Android Tutorial. No sub menus
         headerList.add(menuModel)
