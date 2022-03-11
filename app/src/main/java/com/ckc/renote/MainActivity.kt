@@ -51,6 +51,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         currNote = Json.decodeFromString(contents)
         editor.load(currNote.contents)
+
     }
 
     private fun loadFromDatabase(sectionName: String) {
@@ -58,6 +59,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         currNote = noteDao.findByName(sectionName)
         Log.d("loadFromDatabase", currNote.toString())
         editor.load(currNote.contents)
+        supportActionBar?.title = sectionName
     }
 
     private fun saveFile() {
@@ -96,8 +98,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setSupportActionBar(toolbar)
         val fab = findViewById<FloatingActionButton>(R.id.fab)
         fab.setOnClickListener {
-            db.clearAllTables()
-            //startActivity(Intent(this@MainActivity, MainActivity2::class.java))
+            //db.clearAllTables()
+            startActivity(Intent(this@MainActivity, MainActivity2::class.java))
         }
 
         this.db = NoteRoomDatabase.getDatabase(applicationContext)
@@ -154,7 +156,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         expandableListView?.let { expandableListAdapter?.initiateExpandableListView(it) }
         expandableListAdapter?.initiateDao(noteDao)
         expandableListAdapter?.initiateMainActivity(this)
-        supportActionBar?.setDisplayShowTitleEnabled(false) // hides an app name in the toolbar
+        supportActionBar?.title = "" // hides an app name in the toolbar
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -417,9 +419,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
                     drawer.closeDrawer(GravityCompat.START)
                 }
-                // Close the navigation drawer
-                val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
-                drawer.closeDrawer(GravityCompat.START)
             }
             false
         }

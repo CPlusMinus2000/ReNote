@@ -1,6 +1,7 @@
 package com.ckc.renote
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.SharedPreferences
@@ -10,6 +11,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
@@ -208,22 +210,22 @@ open class ExpandableListAdapter(
     }
 
     override fun onGroupExpanded (groupPosition: Int) {
-        val collapseOtherGroupsWhenGroupExpands = preferences.getBoolean("collapse", false)
-
-        if (collapseOtherGroupsWhenGroupExpands) { // collapse all other groups when a group gets expanded
-            for (gp in 0 until groupCount) {
-                if (gp != groupPosition && expandableListView.isGroupExpanded(gp)) {
-                    expandableListView.collapseGroup(gp)
-                }
-            }
-        }
-        super.onGroupExpanded(groupPosition)
         val groupView: View = getGroup(groupPosition).view
         val lblListHeader = groupView.findViewById<TextView>(R.id.lblListHeader)
         val actualText: String = lblListHeader?.text.toString()
         if (actualText == "+ new notebook") {
             createNewNotebook()
+        } else {
+            val collapseOtherGroupsWhenGroupExpands = preferences.getBoolean("collapse", false)
+            if (collapseOtherGroupsWhenGroupExpands) { // collapse all other groups when a group gets expanded
+                for (gp in 0 until groupCount) {
+                    if (gp != groupPosition && expandableListView.isGroupExpanded(gp)) {
+                        expandableListView.collapseGroup(gp)
+                    }
+                }
+            }
         }
+        super.onGroupExpanded(groupPosition)
     }
 
     private fun collapseAllNotebooks() {
@@ -255,9 +257,11 @@ open class ExpandableListAdapter(
             noteDao.insertNotebook(newNotebook)
             mainActivity.prepareMenuData()
             notifyDataSetChanged()
-            collapseAllNotebooks()
         }
-        builder.setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
+        builder.setNegativeButton("Cancel") {dialog, _ ->
+            mainActivity.hideKeyboard()
+            dialog.cancel()
+        }
         builder.show()
     }
 
@@ -299,10 +303,20 @@ open class ExpandableListAdapter(
             mainActivity.prepareMenuData()
             notifyDataSetChanged()
         }
-        builder.setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
+        builder.setNegativeButton("Cancel") { dialog, _ ->
+            mainActivity.hideKeyboard()
+            dialog.cancel()}
         builder.show()
         Log.i("New section", "Checkpoint 3")
     }
 
 
+    fun Activity.hideKeyboard() {
+        hideKeyboard(currentFocus ?: View(this))
+    }
+
+    private fun Context.hideKeyboard(view: View) {
+        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
 }
