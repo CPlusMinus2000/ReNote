@@ -22,6 +22,7 @@ class Editor(
         webview.webViewClient = this
         webview.loadUrl("file:///android_res/raw/editor.html")
         webview.settings.javaScriptEnabled = true
+        WebView.setWebContentsDebuggingEnabled(true)
     }
 
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
