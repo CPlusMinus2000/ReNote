@@ -8,6 +8,7 @@ import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.intent.Intents.intended
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent
+import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.*
 import org.hamcrest.core.AllOf.allOf
 import org.junit.Test
@@ -32,7 +33,7 @@ class EspressoTest {
         Espresso.closeSoftKeyboard()
         val storeId = "111\n"
         sleep(5000)
-        onView(allOf(withId(R.id.edit_text1), isDisplayed()))
+        onView(allOf(withId(R.id.editor), isDisplayed()))
             .perform(scrollTo())
             .perform(typeText("Does this work?"))
             .check(matches(withText("Does this work?")))
@@ -47,13 +48,13 @@ class EspressoTest {
         sleep(500)
         Espresso.closeSoftKeyboard()
         sleep(500)
-        onView(allOf(withId(R.id.edit_text1), isDisplayed()))
+        onView(allOf(withId(R.id.editor), isDisplayed()))
             .perform(scrollTo())
             .perform(typeText("This text should be preserved"))
 
         onView(withId(R.id.action_settings)).perform(click())
         Espresso.pressBack()
-        onView(allOf(withId(R.id.edit_text1), isDisplayed()))
+        onView(allOf(withId(R.id.editor), isDisplayed()))
             .check(matches(withText("This text should be preserved")))
 
         Intents.release()
@@ -65,7 +66,7 @@ class EspressoTest {
         Intents.init()
         ActivityScenario.launch(MainActivity::class.java)
         Espresso.closeSoftKeyboard()
-        onView(allOf(withId(R.id.edit_text1), isDisplayed()))
+        onView(allOf(withId(R.id.editor), isDisplayed()))
             .perform(scrollTo())
             .perform(typeText("Let's see if this saves properly"))
 
@@ -75,7 +76,7 @@ class EspressoTest {
         // and check if the text is still there
         // I just can't find the damn IDs, sadge
 
-        onView(allOf(withId(R.id.edit_text1), isDisplayed()))
+        onView(allOf(withId(R.id.editor), isDisplayed()))
             .check(matches(withText("Let's see if this saves properly")))
 
         Intents.release()
