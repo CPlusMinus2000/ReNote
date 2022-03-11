@@ -15,10 +15,18 @@ class NoteRoomDatabaseTest : TestCase() {
     private val bookName = "CS"
     private val testNote = Note(
         "This is a test", noteName, System.currentTimeMillis(),
-        System.currentTimeMillis(), 0, bookName
+        System.currentTimeMillis(), 1, bookName
+    )
+    private val testNote2 = Note(
+        "This is a test2", "test2", System.currentTimeMillis(),
+        System.currentTimeMillis(), 2, bookName
+    )
+    private val testNote3 = Note(
+        "This is a test3", "test3", System.currentTimeMillis(),
+        System.currentTimeMillis(), 3, bookName
     )
     private val testNotebook = Notebook(
-        bookName, 0
+        bookName, 1
     )
 
     public override fun setUp() {
@@ -62,6 +70,34 @@ class NoteRoomDatabaseTest : TestCase() {
         dao.deleteNotebook(testNotebook)
         val ret2 = dao.findNotebookByName(bookName)
         assertEquals(null, ret2)
+    }
+
+    @Test
+    fun testNoteContents() {
+        dao.insert(testNote)
+        val ret = dao.findByName(noteName)
+        val retContents = ret.contents
+        assertEquals(testNote.contents, retContents)
+    }
+
+    @Test
+    fun testNotebookContents() {
+        dao.insertNotebook(testNotebook)
+        val ret = dao.findNotebookByName(bookName)
+        val returnedName = ret.name
+        assertEquals(testNotebook.name, returnedName)
+    }
+
+    @Test
+    fun testFindNoteByName() {
+        dao.insert(testNote)
+        dao.insert(testNote2)
+        dao.insert(testNote3)
+        val ret = dao.findByName(noteName)
+        val retContents = ret.contents
+        assertTrue(retContents == testNote.contents)
+        assertFalse(retContents == testNote2.contents)
+        assertFalse(retContents == testNote3.contents)
     }
 
     public override fun tearDown() {}
