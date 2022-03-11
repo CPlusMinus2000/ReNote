@@ -7,12 +7,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
+import android.view.*
+import android.view.animation.ScaleAnimation
 import android.view.inputmethod.InputMethodManager
 import android.widget.ExpandableListView
 import android.widget.ExpandableListView.OnGroupClickListener
+import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -38,8 +38,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var noteDao: NoteDao
     private var recording: Boolean = false
     private lateinit var editor: Editor
-    private var openSection = "data_structures"
-    private var fileType = ".json"
+    private var openSection = "data_structures" // REDUNDANT - remove when database will save last open page
+    private var mScale = 1f
+    private var mScaleGestureDetector: ScaleGestureDetector? = null
+    var gestureDetector: GestureDetector? = null
 
     @OptIn(ExperimentalSerializationApi::class)
     private fun loadFromDatabase(sectionName: String) {
@@ -145,12 +147,36 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         expandableListAdapter?.initiateMainActivity(this)
         supportActionBar?.title = "" // hides an app name in the toolbar
 
-
-
+        // Page scaling test
+        /*
         val pageView = findViewById<View>(R.id.pageLayout)
         val scalingFactor = 0.5f
         pageView.scaleX = scalingFactor
-        pageView.scaleY = scalingFactor
+        pageView.scaleY = scalingFactor**/
+
+        gestureDetector = GestureDetector(this, GestureListener())
+
+        mScaleGestureDetector = ScaleGestureDetector(this, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            override fun onScale(detector: ScaleGestureDetector): Boolean {
+                val scale = 1 - detector.scaleFactor
+                val prevScale = mScale
+                mScale += scale
+                if (mScale > 10f) mScale = 10f
+                val scaleAnimation = ScaleAnimation(
+                    1f / prevScale,
+                    1f / mScale,
+                    1f / prevScale,
+                    1f / mScale,
+                    detector.focusX,
+                    detector.focusY
+                )
+                scaleAnimation.duration = 0
+                scaleAnimation.fillAfter = true
+                val pageView = findViewById<View>(R.id.pageLayout)
+                pageView.startAnimation(scaleAnimation)
+                return true
+            }
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -440,5 +466,22 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun Context.hideKeyboard(view: View) {
         val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        super.dispatchTouchEvent(event)
+        mScaleGestureDetector!!.onTouchEvent(event)
+        gestureDetector!!.onTouchEvent(event)
+        return gestureDetector!!.onTouchEvent(event)
+    }
+
+    private inner class GestureListener : GestureDetector.SimpleOnGestureListener() {
+        override fun onDown(e: MotionEvent): Boolean {
+            return true
+        }
+
+        override fun onDoubleTap(e: MotionEvent): Boolean {
+            return true
+        }
     }
 }
