@@ -3,7 +3,6 @@ package com.ckc.renote
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.graphics.Typeface
 import android.text.InputType
@@ -111,7 +110,7 @@ open class ExpandableListAdapter(
                         "This action cannot be undone."))
                 builder.setCancelable(false)
                 builder.setPositiveButton("Delete") {
-                        dialog, id ->
+                        _, _ ->
                     //val child: List<String> =
                     //    laptopCollections.get(laptops.get(groupPosition))
                     //child.remove(childPosition)
@@ -121,7 +120,7 @@ open class ExpandableListAdapter(
                     notifyDataSetChanged()
                 }
                 builder.setNegativeButton("Cancel") {
-                        dialog, id -> dialog.cancel()
+                        dialog, _ -> dialog.cancel()
                 }
                 val alertDialog = builder.create()
                 alertDialog.show()
@@ -170,17 +169,12 @@ open class ExpandableListAdapter(
                         "This action cannot be undone."))
                 builder.setCancelable(false)
                 builder.setPositiveButton("Delete") {
-                        dialog, id ->
-                    //val child: List<String> =
-                    //    laptopCollections.get(laptops.get(groupPosition))
-                    //child.remove(childPosition)
-
-                    // mydeletestuff
+                        _, _ ->
                     val notebook: Notebook = noteDao.findNotebookByName(actualText)
                     val sections: List<Note> = noteDao.loadNotesInOrder(notebook.name)
-                    val sectionInterator = sections.iterator()
-                    while (sectionInterator.hasNext()) {
-                        val section: Note = sectionInterator.next()
+                    val sectionIterator = sections.iterator()
+                    while (sectionIterator.hasNext()) {
+                        val section: Note = sectionIterator.next()
                         noteDao.delete(section)
                     }
                     noteDao.deleteNotebook(notebook)
@@ -188,7 +182,7 @@ open class ExpandableListAdapter(
                     notifyDataSetChanged()
                 }
                 builder.setNegativeButton("Cancel") {
-                        dialog, id -> dialog.cancel()
+                        dialog, _ -> dialog.cancel()
                 }
                 val alertDialog = builder.create()
                 alertDialog.show()
@@ -232,14 +226,14 @@ open class ExpandableListAdapter(
         }
     }
 
-    private fun CollapseAllNotebooks() {
+    private fun collapseAllNotebooks() {
         for (gp in 0 until groupCount) {
             expandableListView.collapseGroup(gp)
         }
     }
 
     private fun createNewNotebook() {
-        val builder: AlertDialog.Builder = android.app.AlertDialog.Builder(context)
+        val builder: AlertDialog.Builder = AlertDialog.Builder(context)
         builder.setTitle("Enter the notebook title:")
 
         // Set up the input
@@ -250,7 +244,7 @@ open class ExpandableListAdapter(
         builder.setView(input)
 
         // Set up the buttons
-        builder.setPositiveButton("Create", DialogInterface.OnClickListener { dialog, which ->
+        builder.setPositiveButton("Create") { _, _ ->
             // Here you get get input text from the Edittext
             val notebookName = input.text.toString()
             val order = noteDao.getMaxNotebookOrder() + 1
@@ -261,15 +255,15 @@ open class ExpandableListAdapter(
             noteDao.insertNotebook(newNotebook)
             mainActivity.prepareMenuData()
             notifyDataSetChanged()
-            CollapseAllNotebooks()
-        })
-        builder.setNegativeButton("Cancel", DialogInterface.OnClickListener { dialog, which -> dialog.cancel() })
+            collapseAllNotebooks()
+        }
+        builder.setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
         builder.show()
     }
 
     fun createNewSection(groupPosition: Int) {
         Log.i("New section", "Checkpoint 0")
-        val builder: AlertDialog.Builder = android.app.AlertDialog.Builder(context)
+        val builder: AlertDialog.Builder = AlertDialog.Builder(context)
         builder.setTitle("Enter the section title:")
 
         // Set up the input
@@ -282,7 +276,7 @@ open class ExpandableListAdapter(
         Log.i("New section", "Checkpoint 2")
 
         // Set up the buttons
-        builder.setPositiveButton("Create", DialogInterface.OnClickListener { dialog, which ->
+        builder.setPositiveButton("Create") { _, _ ->
             Log.i("New section", "Checkpoint 1")
             val groupView: View = getGroup(groupPosition).view
             val lblListHeader = groupView.findViewById<TextView>(R.id.lblListHeader)
@@ -304,9 +298,8 @@ open class ExpandableListAdapter(
             noteDao.insert(newSection)
             mainActivity.prepareMenuData()
             notifyDataSetChanged()
-            //CollapseAllNotebooks()
-        })
-        builder.setNegativeButton("Cancel", DialogInterface.OnClickListener { dialog, which -> dialog.cancel() })
+        }
+        builder.setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
         builder.show()
         Log.i("New section", "Checkpoint 3")
     }
