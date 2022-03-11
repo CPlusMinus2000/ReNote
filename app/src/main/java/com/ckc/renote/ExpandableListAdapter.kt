@@ -228,12 +228,6 @@ open class ExpandableListAdapter(
         super.onGroupExpanded(groupPosition)
     }
 
-    private fun collapseAllNotebooks() {
-        for (gp in 0 until groupCount) {
-            expandableListView.collapseGroup(gp)
-        }
-    }
-
     private fun createNewNotebook() {
         val builder: AlertDialog.Builder = AlertDialog.Builder(context)
         builder.setTitle("Enter the notebook title:")

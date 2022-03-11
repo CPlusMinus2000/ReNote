@@ -24,8 +24,6 @@ import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private var expandableListAdapter: ExpandableListAdapter? = null
@@ -44,16 +42,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var fileType = ".json"
 
     @OptIn(ExperimentalSerializationApi::class)
-    private fun loadFromFile(sectionName: String) {
-        openSection = sectionName
-        val contents = this.openFileInput(openSection.plus(fileType)).bufferedReader().useLines { lines ->
-            lines.fold("") { some, text -> "$some\n$text" }
-        }
-        currNote = Json.decodeFromString(contents)
-        editor.load(currNote.contents)
-
-    }
-
     private fun loadFromDatabase(sectionName: String) {
         Log.d("loadFromDatabase", db.toString())
         currNote = noteDao.findByName(sectionName)
@@ -152,11 +140,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         editor = Editor(findViewById(R.id.editor), db.noteDao())
         loadFromDatabase(openSection)
-        updatePageScrollView()
         expandableListView?.let { expandableListAdapter?.initiateExpandableListView(it) }
         expandableListAdapter?.initiateDao(noteDao)
         expandableListAdapter?.initiateMainActivity(this)
         supportActionBar?.title = "" // hides an app name in the toolbar
+
+
+
+        val pageView = findViewById<View>(R.id.pageLayout)
+        val scalingFactor = 0.5f
+        pageView.scaleX = scalingFactor
+        pageView.scaleY = scalingFactor
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -422,18 +416,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             false
         }
-    }
-
-    private fun updatePageScrollView() {
-        //val linLayout = findViewById<LinearLayout>(R.id.drawer_layout)
-
-        //val stub = findViewById<View>(R.id.layout_stub) as ViewStub
-        //val edittext = EditText(this)
-        ///edittext.id = "page0".toInt()
-
-        //linLayout.addView(edittext)
-
-
     }
 
     override fun onResume() {
