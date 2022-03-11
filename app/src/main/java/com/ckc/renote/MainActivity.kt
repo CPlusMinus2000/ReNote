@@ -96,8 +96,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setSupportActionBar(toolbar)
         val fab = findViewById<FloatingActionButton>(R.id.fab)
         fab.setOnClickListener {
-            startActivity(Intent(this@MainActivity, MainActivity2::class.java))
+            db.clearAllTables()
+            //startActivity(Intent(this@MainActivity, MainActivity2::class.java))
         }
+
+        this.db = NoteRoomDatabase.getDatabase(applicationContext)
+        this.noteDao = db.noteDao()
+
+        createMissingFiles()
 
         expandableListView = findViewById(R.id.expandableListView)
         prepareMenuData()
@@ -141,14 +147,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
          * NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
          * NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
          * NavigationUI.setupWithNavController(navigationView, navController); */
-        this.db = NoteRoomDatabase.getDatabase(applicationContext)
-        this.noteDao = db.noteDao()
-        db.clearAllTables()
-        createMissingFiles()
+
         editor = Editor(findViewById(R.id.editor), db.noteDao())
         loadFromDatabase(openSection)
         updatePageScrollView()
         expandableListView?.let { expandableListAdapter?.initiateExpandableListView(it) }
+        expandableListAdapter?.initiateDao(noteDao)
+        expandableListAdapter?.initiateMainActivity(this)
         supportActionBar?.setDisplayShowTitleEnabled(false) // hides an app name in the toolbar
     }
 
@@ -211,15 +216,70 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 
-    private fun prepareMenuData() {
+    fun prepareMenuData() {
         val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
+
+        headerList.clear()
+        childList.clear()
+
+        val notebooks: List<Notebook> = noteDao.loadNotebooksInOrder()
+
+        Log.i("db", "Notebooks length:: ".plus(notebooks.size))
+
+        val notebookIterator = notebooks.iterator()
+        while (notebookIterator.hasNext()) {
+            val notebook: Notebook = notebookIterator.next()
+            Log.i("db", "Notebook title: ".plus(notebook.name))
+            var menuModel = MenuModel(
+                notebook.name,
+                isGroup = true,
+                hasChildren = true,
+                "",
+                drawer
+            )
+            val childModelsList: MutableList<MenuModel> = ArrayList()
+            headerList.add(menuModel)
+
+            val sections: List<Note> = noteDao.loadNotesInOrder(notebook.name)
+            val sectionInterator = sections.iterator()
+            while (sectionInterator.hasNext()) {
+                val section: Note = sectionInterator.next()
+                val childModel = MenuModel(
+                    section.name,
+                    isGroup = false,
+                    hasChildren = false,
+                    "",
+                    drawer
+                )
+                childModelsList.add(childModel)
+            }
+            val childModel = MenuModel(
+                "+ new section",
+                isGroup = false,
+                hasChildren = false,
+                "",
+                drawer
+            )
+            childModelsList.add(childModel)
+            childList[menuModel] = childModelsList
+        }
+        var menuModel = MenuModel(
+            "+ new notebook",
+            isGroup = false,
+            hasChildren = false,
+            "",
+            drawer
+        )
+        headerList.add(menuModel)
+
+        /*
         var menuModel = MenuModel(
             "Physics",
             isGroup = true,
-            hasChildren = false,
+            hasChildren = true,
             "physics",
             drawer
-        ) //Menu of Android Tutorial. No sub menus
+        )
         headerList.add(menuModel)
         var childModelsList: MutableList<MenuModel> = ArrayList()
         var childModel = MenuModel(
@@ -311,7 +371,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         headerList.add(menuModel)
         if (!menuModel.hasChildren) {
             childList[menuModel] = null
-        }
+        }**/
     }
 
     private fun populateExpandableList() {
@@ -348,19 +408,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 val txtListChild = childView?.findViewById<TextView>(R.id.lblListItem)
                 val actualText: String = txtListChild?.text.toString()
                 if (actualText == "+ new section") {
-                    expandableListAdapter!!.createNewSection()
+                    expandableListAdapter!!.createNewSection(groupPosition)
                 } else {
                     saveFile()
                     val model = childList[headerList[groupPosition]]!![childPosition]
-                    loadFromDatabase(model.url)
+                    loadFromDatabase(model.menuName)
                     // Close the navigation drawer
                     val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
                     drawer.closeDrawer(GravityCompat.START)
                 }
-
-                saveFile()
-                val model = childList[headerList[groupPosition]]!![childPosition]
-                loadFromDatabase(model.url)
                 // Close the navigation drawer
                 val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
                 drawer.closeDrawer(GravityCompat.START)

@@ -6,6 +6,6 @@ import kotlinx.serialization.Serializable
 
 @Entity(tableName = "notebooks")
 data class Notebook(
-    @PrimaryKey val name: String,
+    @PrimaryKey var name: String,
     @ColumnInfo(name = "notebook_order") val order: Int
 )

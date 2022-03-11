@@ -3,9 +3,11 @@ package com.ckc.renote
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.graphics.Typeface
 import android.text.InputType
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,10 +24,20 @@ open class ExpandableListAdapter(
 ) : BaseExpandableListAdapter() {
 
     private lateinit var expandableListView: ExpandableListView
+    private lateinit var noteDao: NoteDao
     private val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    private lateinit var mainActivity: MainActivity
 
     fun initiateExpandableListView(view: ExpandableListView) {
         expandableListView = view
+    }
+
+    fun initiateDao(dao: NoteDao) {
+        noteDao = dao
+    }
+
+    fun initiateMainActivity(activity: MainActivity) {
+        mainActivity = activity
     }
 
     fun updateGUI() {
@@ -103,6 +115,9 @@ open class ExpandableListAdapter(
                     //val child: List<String> =
                     //    laptopCollections.get(laptops.get(groupPosition))
                     //child.remove(childPosition)
+                    val section: Note = noteDao.findByName(actualText)
+                    noteDao.delete(section)
+                    mainActivity.prepareMenuData()
                     notifyDataSetChanged()
                 }
                 builder.setNegativeButton("Cancel") {
@@ -159,6 +174,17 @@ open class ExpandableListAdapter(
                     //val child: List<String> =
                     //    laptopCollections.get(laptops.get(groupPosition))
                     //child.remove(childPosition)
+
+                    // mydeletestuff
+                    val notebook: Notebook = noteDao.findNotebookByName(actualText)
+                    val sections: List<Note> = noteDao.loadNotesInOrder(notebook.name)
+                    val sectionInterator = sections.iterator()
+                    while (sectionInterator.hasNext()) {
+                        val section: Note = sectionInterator.next()
+                        noteDao.delete(section)
+                    }
+                    noteDao.deleteNotebook(notebook)
+                    mainActivity.prepareMenuData()
                     notifyDataSetChanged()
                 }
                 builder.setNegativeButton("Cancel") {
@@ -206,32 +232,84 @@ open class ExpandableListAdapter(
         }
     }
 
-    private fun textInputDialog(message: String): String {
-        var inputText = ""
-        val builder = AlertDialog.Builder(context)
-        builder.setTitle(message)
-        val input = EditText(context)
-        input.inputType = InputType.TYPE_CLASS_TEXT
-        builder.setView(input)
-        builder.setPositiveButton(
-            "Create"
-        ) { _, _ -> inputText = input.text.toString() }
-        builder.setNegativeButton(
-            "Cancel"
-        ) { dialog, _ -> dialog.cancel() }
-        builder.show()
-        return inputText
-    }
-
-
-    fun createNewSection() {
-        var sectionName = textInputDialog("Enter the section title:")
-        notifyDataSetChanged()
+    private fun CollapseAllNotebooks() {
+        for (gp in 0 until groupCount) {
+            expandableListView.collapseGroup(gp)
+        }
     }
 
     private fun createNewNotebook() {
-        var notebookName = textInputDialog("Enter the notebook title:")
-        notifyDataSetChanged()
+        val builder: AlertDialog.Builder = android.app.AlertDialog.Builder(context)
+        builder.setTitle("Enter the notebook title:")
+
+        // Set up the input
+        val input = EditText(context)
+        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.hint = ""
+        input.inputType = InputType.TYPE_CLASS_TEXT
+        builder.setView(input)
+
+        // Set up the buttons
+        builder.setPositiveButton("Create", DialogInterface.OnClickListener { dialog, which ->
+            // Here you get get input text from the Edittext
+            val notebookName = input.text.toString()
+            val order = noteDao.getMaxNotebookOrder() + 1
+            val newNotebook = Notebook(
+                notebookName,
+                order
+            )
+            noteDao.insertNotebook(newNotebook)
+            mainActivity.prepareMenuData()
+            notifyDataSetChanged()
+            CollapseAllNotebooks()
+        })
+        builder.setNegativeButton("Cancel", DialogInterface.OnClickListener { dialog, which -> dialog.cancel() })
+        builder.show()
     }
+
+    fun createNewSection(groupPosition: Int) {
+        Log.i("New section", "Checkpoint 0")
+        val builder: AlertDialog.Builder = android.app.AlertDialog.Builder(context)
+        builder.setTitle("Enter the section title:")
+
+        // Set up the input
+        val input = EditText(context)
+        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.hint = ""
+        input.inputType = InputType.TYPE_CLASS_TEXT
+        builder.setView(input)
+
+        Log.i("New section", "Checkpoint 2")
+
+        // Set up the buttons
+        builder.setPositiveButton("Create", DialogInterface.OnClickListener { dialog, which ->
+            Log.i("New section", "Checkpoint 1")
+            val groupView: View = getGroup(groupPosition).view
+            val lblListHeader = groupView.findViewById<TextView>(R.id.lblListHeader)
+            val notebookName: String = lblListHeader?.text.toString()
+
+            val contents = ""
+            val creationTime = System.currentTimeMillis()
+            val customOrder = noteDao.getMaxCustomOrder() + 1
+            val lastEdited = System.currentTimeMillis()
+            val name = input.text.toString()
+            val newSection = Note(
+                contents,
+                name,
+                creationTime,
+                lastEdited,
+                customOrder,
+                notebookName
+            )
+            noteDao.insert(newSection)
+            mainActivity.prepareMenuData()
+            notifyDataSetChanged()
+            //CollapseAllNotebooks()
+        })
+        builder.setNegativeButton("Cancel", DialogInterface.OnClickListener { dialog, which -> dialog.cancel() })
+        builder.show()
+        Log.i("New section", "Checkpoint 3")
+    }
+
 
 }
