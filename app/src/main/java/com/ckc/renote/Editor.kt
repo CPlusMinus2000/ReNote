@@ -81,7 +81,7 @@ class Editor(
         setContent(undoManager.redo().content)
     }
 
-    fun startRecording() = rewinder.startRecording(undoManager.getCurrentState())
+    fun startRecording(audioFile: String) = rewinder.startRecording(undoManager.getCurrentState(), audioFile)
 
     fun stopRecording() = rewinder.stopRecording()
 

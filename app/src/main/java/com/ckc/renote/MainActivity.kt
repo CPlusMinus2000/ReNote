@@ -1,9 +1,11 @@
 package com.ckc.renote
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -12,11 +14,12 @@ import android.view.animation.ScaleAnimation
 import android.view.inputmethod.InputMethodManager
 import android.widget.ExpandableListView
 import android.widget.ExpandableListView.OnGroupClickListener
-import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -42,6 +45,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var mScale = 1f
     private var mScaleGestureDetector: ScaleGestureDetector? = null
     var gestureDetector: GestureDetector? = null
+    private lateinit var recordButton: MenuItem
+    private val requestRecordAudioPermission = 200
+    private var permissions: Array<String> = arrayOf(Manifest.permission.RECORD_AUDIO)
 
     @OptIn(ExperimentalSerializationApi::class)
     private fun loadFromDatabase(sectionName: String) {
@@ -188,13 +194,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_record -> {
+                recordButton = item
                 if (!recording) {
-                    editor.startRecording()
-                    item.title = "Stop"
-                    recording = true
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(this, permissions, requestRecordAudioPermission)
+                    } else {
+                        editor.startRecording("${externalCacheDir?.absolutePath}/audiorecordtest.3gp")
+                        recordButton.title = "Stop"
+                        recording = true
+                    }
                 } else {
                     editor.stopRecording()
-                    item.title = "Record"
+                    recordButton.title = "Record"
                     recording = false
                 }
             }
@@ -482,6 +493,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         override fun onDoubleTap(e: MotionEvent): Boolean {
             return true
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == requestRecordAudioPermission) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                editor.startRecording("${externalCacheDir?.absolutePath}/audiorecordtest.3gp")
+                recordButton.title = "Stop"
+                recording = true
+            } else {
+                Toast.makeText(applicationContext, "Please allow microphone access for audio recording!", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }

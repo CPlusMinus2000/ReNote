@@ -1,16 +1,37 @@
 package com.ckc.renote
 
+import android.media.MediaPlayer
+import android.media.MediaRecorder
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
+import java.io.IOException
 
 data class Recording(var times: MutableList<Long>, var states: MutableList<State>)
 
 class Rewinder {
+    private var audioRecorder: MediaRecorder? = null
+    private var audioPlayer: MediaPlayer? = null
     private lateinit var recording: Recording
     private var initialTime: Long = 0
     private var isRecording: Boolean = false
 
-    fun startRecording(state: State) {
+    fun startRecording(state: State, audioFile: String) {
+        audioRecorder = MediaRecorder().apply {
+            setAudioSource(MediaRecorder.AudioSource.MIC)
+            setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+            setOutputFile(audioFile)
+            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+
+            try {
+                prepare()
+            } catch (e: IOException) {
+                Log.e(null, "prepare() failed")
+            }
+
+            start()
+        }
+
         recording = Recording(mutableListOf(), mutableListOf())
         initialTime = System.currentTimeMillis()
         recording.states.add(state)
@@ -28,6 +49,11 @@ class Rewinder {
     fun stopRecording() {
         recording.times.add(System.currentTimeMillis() - initialTime)
         isRecording = false
+        audioRecorder?.apply {
+            stop()
+            release()
+        }
+        audioRecorder = null
     }
 
     fun playRecording(editor: Editor, saved: State) {
