@@ -18,7 +18,6 @@ import org.junit.runner.RunWith
 class UiAutomatorTest {
 
     private lateinit var device: UiDevice
-
     @Before
     fun setUp() {
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
@@ -40,7 +39,7 @@ class UiAutomatorTest {
     fun testEnteringText() {
         val editor: UiObject = device.findObject(UiSelector().className("android.widget.EditText"))
         editor.setText("Does this work?")
-        sleep(500);
+        sleep(500)
         assertThat(editor.getText(), `is`(equalTo("Does this work?")))
     }
 
