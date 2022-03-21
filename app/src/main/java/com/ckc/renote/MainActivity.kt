@@ -448,10 +448,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private fun hasText(targetStr: String, section: Note): Boolean {
+    private fun hasText(section: Note): Boolean {
+        if (searchData.textInput == "") {
+            return false
+        }
         // TO IMPLEMENT:
-        // true if section contains targetStr, false otherwise
-        return true
+        // true if section contains searchData.textInput, false otherwise
+        return section.contents.contains(searchData.textInput, ignoreCase = true)
     }
 
     private fun updateSearchResults() {
@@ -465,7 +468,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val sectionIterator = sections.iterator()
             while (sectionIterator.hasNext()) {
                 val section: Note = sectionIterator.next()
-                if (hasText(searchData.textInput, section)) {
+                if (hasText(section)) {
                     searchData.sectionNames += section.name
                 }
             }
