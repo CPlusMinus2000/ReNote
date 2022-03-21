@@ -225,8 +225,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.action_record -> {
                 recordButton = item
                 if (!recording) {
-                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                        ActivityCompat.requestPermissions(this, permissions, requestRecordAudioPermission)
+                    if (ActivityCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.RECORD_AUDIO
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        ActivityCompat.requestPermissions(
+                            this,
+                            permissions,
+                            requestRecordAudioPermission
+                        )
                     } else {
                         editor.startRecording("${externalCacheDir?.absolutePath}/audiorecordtest.3gp")
                         recordButton.title = "Stop"
@@ -419,7 +427,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == requestRecordAudioPermission) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -427,14 +439,22 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 recordButton.title = "Stop"
                 recording = true
             } else {
-                Toast.makeText(applicationContext, "Please allow microphone access for audio recording!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    applicationContext,
+                    "Please allow microphone access for audio recording!",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
-}
+
+    private fun hasText(targetStr: String, section: Note): Boolean {
+        // TO IMPLEMENT:
+        // true if section contains targetStr, false otherwise
+        return true
+    }
 
     private fun updateSearchResults() {
-
         searchData.sectionNames.clear()
         // iterate over all notebooks and sections in order
         val notebooks: List<Notebook> = noteDao.loadNotebooksInOrder()
@@ -445,14 +465,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val sectionIterator = sections.iterator()
             while (sectionIterator.hasNext()) {
                 val section: Note = sectionIterator.next()
-
-                // TO IMPLEMENT: only add if there is a match
-                searchData.sectionNames += section.name
-
-                /*
-                if (section.name == "GG boi") {
-                    Log.i("contents", "ALL GG BOI CONTENTS:\n".plus(section.contents))
-                }**/
+                if (hasText(searchData.textInput, section)) {
+                    searchData.sectionNames += section.name
+                }
             }
         }
     }
@@ -471,7 +486,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val sourceString = notebookName.plus(": ").plus(sectionName)
             val spannableString = SpannableString(sourceString)
             val boldSpan = StyleSpan(Typeface.BOLD)
-            spannableString.setSpan(boldSpan, 0, notebookName.length + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            spannableString.setSpan(
+                boldSpan,
+                0,
+                notebookName.length + 1,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
             textView.text = spannableString
             childLayout.setOnClickListener {
                 //val actualText: String = textView.text.toString()
@@ -504,7 +524,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             override fun beforeTextChanged(
                 s: CharSequence, start: Int,
                 count: Int, after: Int
-            ) {}
+            ) {
+            }
 
             override fun onTextChanged(
                 s: CharSequence, start: Int,

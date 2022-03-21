@@ -4,6 +4,5 @@ import android.widget.RelativeLayout
 
 class SearchData (
     var textInput: String = "",
-    var sectionNames : MutableList<String> = arrayListOf(),
-    var childViews : MutableList<RelativeLayout> = arrayListOf()
+    var sectionNames : MutableList<String> = arrayListOf()
         )
