@@ -2,21 +2,27 @@ package com.ckc.renote
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Handler
+import android.text.Editable
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.TextWatcher
+import android.text.style.StyleSpan
 import android.util.Log
 import android.view.*
 import android.view.animation.ScaleAnimation
 import android.view.inputmethod.InputMethodManager
-import android.widget.ExpandableListView
+import android.widget.*
 import android.widget.ExpandableListView.OnGroupClickListener
-import android.widget.ScrollView
-import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -24,6 +30,7 @@ import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
+
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private var expandableListAdapter: ExpandableListAdapter? = null
@@ -38,15 +45,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var noteDao: NoteDao
     private var recording: Boolean = false
     private lateinit var editor: Editor
-    private var openSection = "data_structures" // REDUNDANT - remove when database will save last open page
+    private var openSection =
+        "data_structures" // REDUNDANT - remove when database will save last open page
     private var mScale = 1f
     private var mScaleGestureDetector: ScaleGestureDetector? = null
-    var gestureDetector: GestureDetector? = null
+    private var gestureDetector: GestureDetector? = null
+    private var searchData = SearchData()
+    private lateinit var alertDialogGlobal: AlertDialog
 
     @OptIn(ExperimentalSerializationApi::class)
     private fun loadFromDatabase(sectionName: String) {
         Log.d("loadFromDatabase", db.toString())
         currNote = noteDao.findByName(sectionName)
+
+        Log.i("loadFromDatabase", "STILL HERE")
+
         Log.d("loadFromDatabase", currNote.toString())
         editor.load(currNote.contents)
         supportActionBar?.title = sectionName
@@ -61,7 +74,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private suspend fun createFileIfDoesntExist(sectionName: String) {
         if (noteDao.noteExists(sectionName) == 0) {
             val currTime = System.currentTimeMillis()
-            val note = Note("", sectionName, currTime, currTime, noteDao.getMaxCustomOrder() + 1, "")
+            val note =
+                Note("", sectionName, currTime, currTime, noteDao.getMaxCustomOrder() + 1, "")
             noteDao.insertAll(note)
         }
     }
@@ -89,7 +103,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val fab = findViewById<FloatingActionButton>(R.id.fab)
         fab.setOnClickListener {
             //db.clearAllTables()
-            startActivity(Intent(this@MainActivity, MainActivity2::class.java))
+            //startActivity(Intent(this@MainActivity, MainActivity2::class.java))
+            val builder = AlertDialog.Builder(this)
+            builder.setMessage("I wish your sleeves to be always wet.")
+            builder.setCancelable(false)
+            builder.setPositiveButton("Hope for the best") { _, _ ->
+
+            }
+            builder.setNegativeButton("Accept curse") { dialog, _ ->
+                dialog.cancel()
+            }
+            val alertDialog = builder.create()
+            alertDialog.show()
         }
 
         this.db = NoteRoomDatabase.getDatabase(applicationContext)
@@ -145,7 +170,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         expandableListView?.let { expandableListAdapter?.initiateExpandableListView(it) }
         expandableListAdapter?.initiateDao(noteDao)
         expandableListAdapter?.initiateMainActivity(this)
-        supportActionBar?.title = "" // hides an app name in the toolbar
+        supportActionBar?.title =
+            "" // hides an app name in the toolbar // REPLACE WITH CURRENT SECTION NAME
 
         // Page scaling test
         /*
@@ -156,27 +182,29 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         gestureDetector = GestureDetector(this, GestureListener())
 
-        mScaleGestureDetector = ScaleGestureDetector(this, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
-            override fun onScale(detector: ScaleGestureDetector): Boolean {
-                val scale = 1 - detector.scaleFactor
-                val prevScale = mScale
-                mScale += scale
-                if (mScale > 10f) mScale = 10f
-                val scaleAnimation = ScaleAnimation(
-                    1f / prevScale,
-                    1f / mScale,
-                    1f / prevScale,
-                    1f / mScale,
-                    detector.focusX,
-                    detector.focusY
-                )
-                scaleAnimation.duration = 0
-                scaleAnimation.fillAfter = true
-                val pageView = findViewById<View>(R.id.pageLayout)
-                pageView.startAnimation(scaleAnimation)
-                return true
-            }
-        })
+        mScaleGestureDetector = ScaleGestureDetector(
+            this,
+            object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                override fun onScale(detector: ScaleGestureDetector): Boolean {
+                    val scale = 1 - detector.scaleFactor
+                    val prevScale = mScale
+                    mScale += scale
+                    if (mScale > 10f) mScale = 10f
+                    val scaleAnimation = ScaleAnimation(
+                        1f / prevScale,
+                        1f / mScale,
+                        1f / prevScale,
+                        1f / mScale,
+                        detector.focusX,
+                        detector.focusY
+                    )
+                    scaleAnimation.duration = 0
+                    scaleAnimation.fillAfter = true
+                    val pageView = findViewById<View>(R.id.pageLayout)
+                    pageView.startAnimation(scaleAnimation)
+                    return true
+                }
+            })
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -187,6 +215,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            R.id.action_search -> {
+                showSearchAlertDialog()
+            }
             R.id.action_record -> {
                 if (!recording) {
                     editor.startRecording()
@@ -240,19 +271,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     fun prepareMenuData() {
         val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
-
         headerList.clear()
         childList.clear()
-
         val notebooks: List<Notebook> = noteDao.loadNotebooksInOrder()
-
-        Log.i("db", "Notebooks length:: ".plus(notebooks.size))
-
         val notebookIterator = notebooks.iterator()
         while (notebookIterator.hasNext()) {
             val notebook: Notebook = notebookIterator.next()
-            Log.i("db", "Notebook title: ".plus(notebook.name))
-            var menuModel = MenuModel(
+            val menuModel = MenuModel(
                 notebook.name,
                 isGroup = true,
                 hasChildren = true,
@@ -261,11 +286,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             )
             val childModelsList: MutableList<MenuModel> = ArrayList()
             headerList.add(menuModel)
-
             val sections: List<Note> = noteDao.loadNotesInOrder(notebook.name)
-            val sectionInterator = sections.iterator()
-            while (sectionInterator.hasNext()) {
-                val section: Note = sectionInterator.next()
+            val sectionIterator = sections.iterator()
+            while (sectionIterator.hasNext()) {
+                val section: Note = sectionIterator.next()
                 val childModel = MenuModel(
                     section.name,
                     isGroup = false,
@@ -285,7 +309,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             childModelsList.add(childModel)
             childList[menuModel] = childModelsList
         }
-        var menuModel = MenuModel(
+        val menuModel = MenuModel(
             "+ new notebook",
             isGroup = false,
             hasChildren = false,
@@ -293,107 +317,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             drawer
         )
         headerList.add(menuModel)
-
-        /*
-        var menuModel = MenuModel(
-            "Physics",
-            isGroup = true,
-            hasChildren = true,
-            "physics",
-            drawer
-        )
-        headerList.add(menuModel)
-        var childModelsList: MutableList<MenuModel> = ArrayList()
-        var childModel = MenuModel(
-            "+ new section",
-            isGroup = false,
-            hasChildren = false,
-            "information_gathering_interview",
-            drawer
-        )
-        childModelsList.add(childModel)
-        if (!menuModel.hasChildren) {
-            childList[menuModel] = null
-        }
-        menuModel = MenuModel("Computer Science", isGroup = true, hasChildren = true, "", drawer) //Menu of Java Tutorials
-        childModelsList = ArrayList()
-        headerList.add(menuModel)
-        childModel = MenuModel(
-            "Data Structures",
-            isGroup = false,
-            hasChildren = false,
-            "data_structures",
-            drawer
-        )
-        childModelsList.add(childModel)
-        childModel = MenuModel(
-            "Functional Programming",
-            isGroup = false,
-            hasChildren = false,
-            "functional_programming",
-            drawer
-        )
-        childModelsList.add(childModel)
-        childModel = MenuModel(
-            "Object-Oriented Programming",
-            isGroup = false,
-            hasChildren = false,
-            "object_oriented_programming",
-            drawer
-        )
-        childModelsList.add(childModel)
-        childModel = MenuModel(
-            "+ new section",
-            isGroup = false,
-            hasChildren = false,
-            "information_gathering_interview",
-            drawer
-        )
-        childModelsList.add(childModel)
-        if (menuModel.hasChildren) {
-            childList[menuModel] = childModelsList
-        }
-        childModelsList = ArrayList()
-        menuModel = MenuModel("Public Speaking", isGroup = true, hasChildren = true, "", drawer) //Menu of Python Tutorials
-        headerList.add(menuModel)
-        childModel = MenuModel(
-            "Selection Interview",
-            isGroup = false,
-            hasChildren = false,
-            "selection_interview",
-            drawer
-        )
-        childModelsList.add(childModel)
-        childModel = MenuModel(
-            "Information-Gathering Interview",
-            isGroup = false,
-            hasChildren = false,
-            "information_gathering_interview",
-            drawer
-        )
-        childModelsList.add(childModel)
-        childModel = MenuModel(
-            "+ new section",
-            isGroup = false,
-            hasChildren = false,
-            "information_gathering_interview",
-            drawer
-        )
-        childModelsList.add(childModel)
-        if (menuModel.hasChildren) {
-            childList[menuModel] = childModelsList
-        }
-        menuModel = MenuModel(
-            "+ new notebook",
-            isGroup = true,
-            hasChildren = false,
-            "physics",
-            drawer
-        ) //Menu of Android Tutorial. No sub menus
-        headerList.add(menuModel)
-        if (!menuModel.hasChildren) {
-            childList[menuModel] = null
-        }**/
     }
 
     private fun populateExpandableList() {
@@ -426,7 +349,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         expandableListView!!.setOnChildClickListener { _, _, groupPosition, childPosition, _ ->
             if (childList[headerList[groupPosition]] != null) {
-                val childView: View? = expandableListAdapter!!.getChild(groupPosition, childPosition)?.view
+                val childView: View? =
+                    expandableListAdapter!!.getChild(groupPosition, childPosition)?.view
                 val txtListChild = childView?.findViewById<TextView>(R.id.lblListItem)
                 val actualText: String = txtListChild?.text.toString()
                 if (actualText == "+ new section") {
@@ -464,7 +388,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun Context.hideKeyboard(view: View) {
-        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        val inputMethodManager =
+            getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
@@ -483,5 +408,97 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         override fun onDoubleTap(e: MotionEvent): Boolean {
             return true
         }
+    }
+
+    private fun updateSearchResults() {
+
+        searchData.sectionNames.clear()
+        // iterate over all notebooks and sections in order
+        val notebooks: List<Notebook> = noteDao.loadNotebooksInOrder()
+        val notebookIterator = notebooks.iterator()
+        while (notebookIterator.hasNext()) {
+            val notebook: Notebook = notebookIterator.next()
+            val sections: List<Note> = noteDao.loadNotesInOrder(notebook.name)
+            val sectionIterator = sections.iterator()
+            while (sectionIterator.hasNext()) {
+                val section: Note = sectionIterator.next()
+
+                // TO IMPLEMENT: only add if there is a match
+                searchData.sectionNames += section.name
+
+                /*
+                if (section.name == "GG boi") {
+                    Log.i("contents", "ALL GG BOI CONTENTS:\n".plus(section.contents))
+                }**/
+            }
+        }
+    }
+
+    private fun updateSearchInterface(linearLayout: LinearLayout) {
+        // delete all children
+        linearLayout.removeAllViews()
+        // go through the list, create new children
+        for (sectionName in searchData.sectionNames) {
+            val childLayout: View = layoutInflater.inflate(
+                R.layout.search_item,
+                null
+            )
+            val notebookName = noteDao.findByName(sectionName).notebookName
+            val textView = childLayout.findViewById<TextView>(R.id.search_child_text_view)
+            val sourceString = notebookName.plus(": ").plus(sectionName)
+            val spannableString = SpannableString(sourceString)
+            val boldSpan = StyleSpan(Typeface.BOLD)
+            spannableString.setSpan(boldSpan, 0, notebookName.length + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            textView.text = spannableString
+            childLayout.setOnClickListener {
+                //val actualText: String = textView.text.toString()
+                saveFile()
+                loadFromDatabase(sectionName)
+                alertDialogGlobal.cancel()
+            }
+            linearLayout.addView(childLayout)
+        }
+    }
+
+    @SuppressLint("ResourceType")
+    private fun showSearchAlertDialog() {
+
+        val builder = AlertDialog.Builder(this)
+
+        val view = layoutInflater.inflate(R.layout.search_alert_dialog, null)
+        builder.setView(view)
+        builder.setMessage("Search all notes for matching text")
+
+        val wrapper = view.findViewById<LinearLayout>(R.id.search_wrapper_linear_layout)
+        val searchHeader = wrapper.findViewById<ConstraintLayout>(R.id.search_header)
+        val editText = searchHeader.findViewById<EditText>(R.id.search_edit_text)
+        val scrollView = wrapper.findViewById<ScrollView>(R.id.search_scroll_view)
+        val linearLayout = scrollView.findViewById<LinearLayout>(R.id.search_linear_layout)
+        editText.setText(searchData.textInput)
+        editText.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable) {}
+
+            override fun beforeTextChanged(
+                s: CharSequence, start: Int,
+                count: Int, after: Int
+            ) {}
+
+            override fun onTextChanged(
+                s: CharSequence, start: Int,
+                before: Int, count: Int
+            ) {
+                val searchInput = editText.text.toString()
+                searchData.textInput = searchInput
+                Log.i("search", "Search result:".plus(searchInput))
+
+                updateSearchResults()
+                updateSearchInterface(linearLayout)
+            }
+        })
+        val alertDialog = builder.create()
+        alertDialog.show()
+        alertDialogGlobal = alertDialog
+        updateSearchResults()
+        updateSearchInterface(linearLayout)
     }
 }
