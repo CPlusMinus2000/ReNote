@@ -40,6 +40,9 @@ interface NoteDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(note: Note)
 
+    @Query("UPDATE notes SET last_edited = :lastEdited WHERE name = :name")
+    fun update(name: String, lastEdited: Long)
+
     @Delete
     fun delete(note: Note)
 
