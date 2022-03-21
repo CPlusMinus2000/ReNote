@@ -454,7 +454,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         // TO IMPLEMENT:
         // true if section contains searchData.textInput, false otherwise
-        return section.contents.contains(searchData.textInput, ignoreCase = true)
+        var target = section.contents
+        target = target.replace("<(.*?)>".toRegex(), " ")
+        target = target.replace("\\\\u003C(.*?)>".toRegex()," ");
+        target = target.replace("&nbsp;", " ")
+        target = target.replace("&amp;", " ")
+        return target.contains(searchData.textInput, ignoreCase = true)
     }
 
     private fun updateSearchResults() {
