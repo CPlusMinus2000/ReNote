@@ -1,11 +1,13 @@
 package com.ckc.renote
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Typeface
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
@@ -19,10 +21,13 @@ import android.view.animation.ScaleAnimation
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import android.widget.ExpandableListView.OnGroupClickListener
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -30,7 +35,6 @@ import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
-
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private var expandableListAdapter: ExpandableListAdapter? = null
@@ -52,14 +56,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var gestureDetector: GestureDetector? = null
     private var searchData = SearchData()
     private lateinit var alertDialogGlobal: AlertDialog
+    private lateinit var recordButton: MenuItem
+    private val requestRecordAudioPermission = 200
+    private var permissions: Array<String> = arrayOf(Manifest.permission.RECORD_AUDIO)
 
     @OptIn(ExperimentalSerializationApi::class)
     private fun loadFromDatabase(sectionName: String) {
         Log.d("loadFromDatabase", db.toString())
         currNote = noteDao.findByName(sectionName)
-
-        Log.i("loadFromDatabase", "STILL HERE")
-
         Log.d("loadFromDatabase", currNote.toString())
         editor.load(currNote.contents)
         supportActionBar?.title = sectionName
@@ -219,13 +223,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 showSearchAlertDialog()
             }
             R.id.action_record -> {
+                recordButton = item
                 if (!recording) {
-                    editor.startRecording()
-                    item.title = "Stop"
-                    recording = true
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(this, permissions, requestRecordAudioPermission)
+                    } else {
+                        editor.startRecording("${externalCacheDir?.absolutePath}/audiorecordtest.3gp")
+                        recordButton.title = "Stop"
+                        recording = true
+                    }
                 } else {
                     editor.stopRecording()
-                    item.title = "Record"
+                    recordButton.title = "Record"
                     recording = false
                 }
             }
@@ -409,6 +418,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             return true
         }
     }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == requestRecordAudioPermission) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                editor.startRecording("${externalCacheDir?.absolutePath}/audiorecordtest.3gp")
+                recordButton.title = "Stop"
+                recording = true
+            } else {
+                Toast.makeText(applicationContext, "Please allow microphone access for audio recording!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+}
 
     private fun updateSearchResults() {
 
