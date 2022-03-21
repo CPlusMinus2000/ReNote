@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Typeface
 import android.text.InputType
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -260,7 +259,6 @@ open class ExpandableListAdapter(
     }
 
     fun createNewSection(groupPosition: Int) {
-        Log.i("New section", "Checkpoint 0")
         val builder: AlertDialog.Builder = AlertDialog.Builder(context)
         builder.setTitle("Enter the section title:")
 
@@ -271,11 +269,8 @@ open class ExpandableListAdapter(
         input.inputType = InputType.TYPE_CLASS_TEXT
         builder.setView(input)
 
-        Log.i("New section", "Checkpoint 2")
-
         // Set up the buttons
         builder.setPositiveButton("Create") { _, _ ->
-            Log.i("New section", "Checkpoint 1")
             val groupView: View = getGroup(groupPosition).view
             val lblListHeader = groupView.findViewById<TextView>(R.id.lblListHeader)
             val notebookName: String = lblListHeader?.text.toString()
@@ -301,11 +296,10 @@ open class ExpandableListAdapter(
             mainActivity.hideKeyboard()
             dialog.cancel()}
         builder.show()
-        Log.i("New section", "Checkpoint 3")
     }
 
 
-    fun Activity.hideKeyboard() {
+    private fun Activity.hideKeyboard() {
         hideKeyboard(currentFocus ?: View(this))
     }
 
