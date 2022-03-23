@@ -215,6 +215,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_search -> {
+                saveFile()
                 showSearchAlertDialog()
             }
             R.id.action_record -> {
@@ -450,10 +451,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // TO IMPLEMENT:
         // true if section contains searchData.textInput, false otherwise
         var target = section.contents
-        target = target.replace("<(.*?)>".toRegex(), " ")
-        target = target.replace("\\\\u003C(.*?)>".toRegex()," ");
-        target = target.replace("&nbsp;", " ")
-        target = target.replace("&amp;", " ")
+        target = target.replace("<(.*?)>".toRegex(), "")
+        target = target.replace("\\\\u003C(.*?)>".toRegex(),"");
+        target = target.replace("&nbsp;", "")
+        target = target.replace("&amp;", "")
         return target.contains(searchData.textInput, ignoreCase = true)
     }
 
@@ -508,13 +509,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     @SuppressLint("ResourceType")
     private fun showSearchAlertDialog() {
-
         val builder = AlertDialog.Builder(this)
-
         val view = layoutInflater.inflate(R.layout.search_alert_dialog, null)
         builder.setView(view)
         builder.setMessage("Search all notes for matching text")
-
         val wrapper = view.findViewById<LinearLayout>(R.id.search_wrapper_linear_layout)
         val searchHeader = wrapper.findViewById<ConstraintLayout>(R.id.search_header)
         val editText = searchHeader.findViewById<EditText>(R.id.search_edit_text)
@@ -523,13 +521,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         editText.setText(searchData.textInput)
         editText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable) {}
-
             override fun beforeTextChanged(
                 s: CharSequence, start: Int,
                 count: Int, after: Int
-            ) {
-            }
-
+            ) {}
             override fun onTextChanged(
                 s: CharSequence, start: Int,
                 before: Int, count: Int

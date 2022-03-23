@@ -9,6 +9,13 @@
             app:title="Automatically collapse notebooks"
             app:summaryOn="Opened notebooks will automatically collapse when another notebook is opened"
             app:summaryOff="Opened notebooks will remain open when another notebook is opened"/>
+
+        <ListPreference
+            app:dialogTitle="Select bluetooth adapter"
+            app:key = "bluetoothName"
+            app:summary="Click to show a list to choose from"
+            app:title="Bluetooth adapter"
+            />
     </PreferenceCategory>
 
 </PreferenceScreen>

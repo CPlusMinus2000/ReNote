@@ -277,6 +277,7 @@ open class ExpandableListAdapter(
         val input = EditText(context)
         input.hint = ""
         input.inputType = InputType.TYPE_CLASS_TEXT
+        input.setText(actualText)
         builder.setView(input)
         builder.setPositiveButton("Rename") { _, _ ->
             val section: Note = noteDao.findByName(actualText)
@@ -299,6 +300,7 @@ open class ExpandableListAdapter(
             mainActivity.prepareMenuData()
             notifyDataSetChanged()
             mainActivity.loadFromDatabase(name)
+            mainActivity.hideKeyboard()
             mainActivity.hideKeyboard()
         }
         builder.setNegativeButton("Cancel") { dialog, _ ->
@@ -424,6 +426,7 @@ open class ExpandableListAdapter(
         val input = EditText(context)
         input.hint = ""
         input.inputType = InputType.TYPE_CLASS_TEXT
+        input.setText(actualText)
         builder.setView(input)
         builder.setPositiveButton("Rename") { _, _ ->
             val notebook: Notebook = noteDao.findNotebookByName(actualText)
@@ -433,7 +436,6 @@ open class ExpandableListAdapter(
                 notebookName,
                 order
             )
-
             val sections: List<Note> = noteDao.loadNotesInOrder(notebook.name)
             val sectionIterator = sections.iterator()
             while (sectionIterator.hasNext()) {
