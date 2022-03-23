@@ -6,8 +6,8 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.graphics.Typeface
 import android.content.pm.PackageManager
+import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
@@ -21,8 +21,6 @@ import android.view.animation.ScaleAnimation
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import android.widget.ExpandableListView.OnGroupClickListener
-import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -49,7 +47,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var noteDao: NoteDao
     private var recording: Boolean = false
     private lateinit var editor: Editor
-    private var openSection =
+    var openSection =
         "data_structures" // REDUNDANT - remove when database will save last open page
     private var mScale = 1f
     private var mScaleGestureDetector: ScaleGestureDetector? = null
@@ -60,16 +58,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private val requestRecordAudioPermission = 200
     private var permissions: Array<String> = arrayOf(Manifest.permission.RECORD_AUDIO)
 
+
     @OptIn(ExperimentalSerializationApi::class)
-    private fun loadFromDatabase(sectionName: String) {
+    fun loadFromDatabase(sectionName: String) {
         Log.d("loadFromDatabase", db.toString())
         currNote = noteDao.findByName(sectionName)
         Log.d("loadFromDatabase", currNote.toString())
         editor.load(currNote.contents)
         supportActionBar?.title = sectionName
+        openSection = sectionName
+        // TO IMPLEMENT: load openSection into database
+        hideKeyboard()
     }
 
-    private fun saveFile() {
+    fun saveFile() {
         Log.d("EditorAddress", editor.toString())
         Log.d("currNoteAddress", currNote.toString())
         editor.save(currNote)
@@ -139,6 +141,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             override fun onDrawerOpened(drawerView: View) {
                 Log.i("drawer", "onDrawerOpened")
                 hideKeyboard()
+                saveFile()
             }
 
             override fun onDrawerClosed(drawerView: View) {
@@ -169,20 +172,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
          * NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
          * NavigationUI.setupWithNavController(navigationView, navController); */
 
+        // TO IMPLEMENT: openSection = load from database
+
         editor = Editor(findViewById(R.id.editor), db.noteDao())
         loadFromDatabase(openSection)
         expandableListView?.let { expandableListAdapter?.initiateExpandableListView(it) }
         expandableListAdapter?.initiateDao(noteDao)
         expandableListAdapter?.initiateMainActivity(this)
-        supportActionBar?.title =
-            "" // hides an app name in the toolbar // REPLACE WITH CURRENT SECTION NAME
-
-        // Page scaling test
-        /*
-        val pageView = findViewById<View>(R.id.pageLayout)
-        val scalingFactor = 0.5f
-        pageView.scaleX = scalingFactor
-        pageView.scaleY = scalingFactor**/
 
         gestureDetector = GestureDetector(this, GestureListener())
 
@@ -209,6 +205,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     return true
                 }
             })
+
+        /*
+        val navView = drawer.findViewById<NavigationView>(R.id.nav_view)
+
+
+        var orderSpinner: Spinner = findViewById(R.id.order_spinner)
+
+        var orderSpinnerOptions = arrayOf("Option1", "Option 2", "Option3")
+        orderSpinner.adapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, orderSpinnerOptions)
+        orderSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener{
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+                TODO("Not yet implemented")
+            }
+
+        }**/
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -454,7 +469,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         // TO IMPLEMENT:
         // true if section contains searchData.textInput, false otherwise
-        return section.contents.contains(searchData.textInput, ignoreCase = true)
+        //var contents = section.contents
+        //contents.replace("\\<.*?>", " ")
+        val contents: String = section.contents.replace("\\<.*?>", " ")
+
+        Log.d("dbdbdb", "BEFORE: ".plus("\n") .plus(section.contents).plus("\n"))
+        Log.d("dbdbdb", "AFTER: \n".plus(contents).plus("\n\n"))
+
+        return contents.contains(searchData.textInput, ignoreCase = true)
     }
 
     private fun updateSearchResults() {

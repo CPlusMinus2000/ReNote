@@ -8,6 +8,7 @@ import android.content.SharedPreferences
 import android.graphics.Typeface
 import android.text.InputType
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
@@ -106,25 +107,7 @@ open class ExpandableListAdapter(
         optionsButton.setOnClickListener {
             val actualText: String = txtListChild.text.toString()
             if (actualText != "+ new section") {
-                val builder = AlertDialog.Builder(context)
-                builder.setMessage("Do you wish to delete ".plus(actualText).plus("?\n" +
-                        "This action cannot be undone."))
-                builder.setCancelable(false)
-                builder.setPositiveButton("Delete") {
-                        _, _ ->
-                    //val child: List<String> =
-                    //    laptopCollections.get(laptops.get(groupPosition))
-                    //child.remove(childPosition)
-                    val section: Note = noteDao.findByName(actualText)
-                    noteDao.delete(section)
-                    mainActivity.prepareMenuData()
-                    notifyDataSetChanged()
-                }
-                builder.setNegativeButton("Cancel") {
-                        dialog, _ -> dialog.cancel()
-                }
-                val alertDialog = builder.create()
-                alertDialog.show()
+                showSectionOptions(optionsButton, actualText)
             }
         }
         getChild(groupPosition, childPosition)?.view = newView
@@ -165,28 +148,7 @@ open class ExpandableListAdapter(
         optionsButton.setOnClickListener {
             val actualText: String = lblListHeader.text.toString()
             if (actualText != "+ new notebook") {
-                val builder = AlertDialog.Builder(context)
-                builder.setMessage("Do you wish to delete ".plus(actualText).plus("?\n" +
-                        "This action cannot be undone."))
-                builder.setCancelable(false)
-                builder.setPositiveButton("Delete") {
-                        _, _ ->
-                    val notebook: Notebook = noteDao.findNotebookByName(actualText)
-                    val sections: List<Note> = noteDao.loadNotesInOrder(notebook.name)
-                    val sectionIterator = sections.iterator()
-                    while (sectionIterator.hasNext()) {
-                        val section: Note = sectionIterator.next()
-                        noteDao.delete(section)
-                    }
-                    noteDao.deleteNotebook(notebook)
-                    mainActivity.prepareMenuData()
-                    notifyDataSetChanged()
-                }
-                builder.setNegativeButton("Cancel") {
-                        dialog, _ -> dialog.cancel()
-                }
-                val alertDialog = builder.create()
-                alertDialog.show()
+                showNotebookOptions(optionsButton, actualText)
             }
         }
         getGroup(groupPosition).view = newView
@@ -242,14 +204,17 @@ open class ExpandableListAdapter(
         builder.setPositiveButton("Create") { _, _ ->
             // Here you get get input text from the Edittext
             val notebookName = input.text.toString()
-            val order = noteDao.getMaxNotebookOrder() + 1
-            val newNotebook = Notebook(
-                notebookName,
-                order
-            )
-            noteDao.insertNotebook(newNotebook)
-            mainActivity.prepareMenuData()
-            notifyDataSetChanged()
+
+            if (notebookName != "+ new notebook") {
+                val order = noteDao.getMaxNotebookOrder() + 1
+                val newNotebook = Notebook(
+                    notebookName,
+                    order
+                )
+                noteDao.insertNotebook(newNotebook)
+                mainActivity.prepareMenuData()
+                notifyDataSetChanged()
+            }
         }
         builder.setNegativeButton("Cancel") {dialog, _ ->
             mainActivity.hideKeyboard()
@@ -261,36 +226,34 @@ open class ExpandableListAdapter(
     fun createNewSection(groupPosition: Int) {
         val builder: AlertDialog.Builder = AlertDialog.Builder(context)
         builder.setTitle("Enter the section title:")
-
-        // Set up the input
         val input = EditText(context)
-        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
         input.hint = ""
         input.inputType = InputType.TYPE_CLASS_TEXT
         builder.setView(input)
-
-        // Set up the buttons
         builder.setPositiveButton("Create") { _, _ ->
-            val groupView: View = getGroup(groupPosition).view
-            val lblListHeader = groupView.findViewById<TextView>(R.id.lblListHeader)
-            val notebookName: String = lblListHeader?.text.toString()
-
-            val contents = ""
-            val creationTime = System.currentTimeMillis()
-            val customOrder = noteDao.getMaxCustomOrder() + 1
-            val lastEdited = System.currentTimeMillis()
             val name = input.text.toString()
-            val newSection = Note(
-                contents,
-                name,
-                creationTime,
-                lastEdited,
-                customOrder,
-                notebookName
-            )
-            noteDao.insert(newSection)
-            mainActivity.prepareMenuData()
-            notifyDataSetChanged()
+            if (name != "+ new section") {
+                val groupView: View = getGroup(groupPosition).view
+                val lblListHeader = groupView.findViewById<TextView>(R.id.lblListHeader)
+                val notebookName: String = lblListHeader?.text.toString()
+                val contents = ""
+                val creationTime = System.currentTimeMillis()
+                val customOrder = noteDao.getMaxCustomOrder() + 1
+                val lastEdited = System.currentTimeMillis()
+                val newSection = Note(
+                    contents,
+                    name,
+                    creationTime,
+                    lastEdited,
+                    customOrder,
+                    notebookName
+                )
+                noteDao.insert(newSection)
+                mainActivity.prepareMenuData()
+                notifyDataSetChanged()
+                mainActivity.saveFile()
+                mainActivity.loadFromDatabase(name)
+            }
         }
         builder.setNegativeButton("Cancel") { dialog, _ ->
             mainActivity.hideKeyboard()
@@ -306,5 +269,312 @@ open class ExpandableListAdapter(
     private fun Context.hideKeyboard(view: View) {
         val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+    private fun renameSection(actualText: String) {
+        val builder: AlertDialog.Builder = AlertDialog.Builder(context)
+        builder.setTitle("Enter the new title:")
+        val input = EditText(context)
+        input.hint = ""
+        input.inputType = InputType.TYPE_CLASS_TEXT
+        builder.setView(input)
+        builder.setPositiveButton("Rename") { _, _ ->
+            val section: Note = noteDao.findByName(actualText)
+            val contents = section.contents
+            val creationTime = section.creationTime
+            val customOrder = section.customOrder
+            val lastEdited = section.lastEdited
+            val name = input.text.toString()
+            val notebookName =section.notebookName
+            val newSection = Note(
+                contents,
+                name,
+                creationTime,
+                lastEdited,
+                customOrder,
+                notebookName
+            )
+            noteDao.delete(section)
+            noteDao.insert(newSection)
+            mainActivity.prepareMenuData()
+            notifyDataSetChanged()
+            mainActivity.loadFromDatabase(name)
+            mainActivity.hideKeyboard()
+        }
+        builder.setNegativeButton("Cancel") { dialog, _ ->
+            mainActivity.hideKeyboard()
+            dialog.cancel()}
+        builder.show()
+    }
+
+    private fun moveUpSection(actualText: String) {
+
+        // TO IMPLEMENT
+
+    }
+
+    private fun moveDownSection(actualText: String) {
+
+        // TO IMPLEMENT
+        if (false) { // section exists with smaller order
+
+            val section: Note = noteDao.findByName(actualText)
+            val anotherSection: Note = noteDao.findByName(actualText) // TO IMPLEMENT: get from query
+
+            val newSection = Note(
+                section.contents,
+                section.name,
+                section.creationTime,
+                section.lastEdited,
+                anotherSection.customOrder,
+                section.notebookName
+            )
+            val newAnotherSection = Note(
+                anotherSection.contents,
+                anotherSection.name,
+                anotherSection.creationTime,
+                anotherSection.lastEdited,
+                section.customOrder,
+                anotherSection.notebookName
+            )
+            noteDao.delete(section)
+            noteDao.delete(anotherSection)
+            noteDao.insert(newSection)
+            noteDao.insert(newAnotherSection)
+            mainActivity.prepareMenuData()
+            notifyDataSetChanged()
+        }
+    }
+
+    private fun deleteSection(actualText: String) {
+        if (false) { // TO IMPLEMENT: if num of sections == 1
+            val builder = AlertDialog.Builder(context)
+            builder.setMessage("Section cannot be deleted because it is the last section left.")
+            builder.setNegativeButton("OK") {
+                    dialog, _ -> dialog.cancel()
+            }
+            val alertDialog = builder.create()
+            alertDialog.show()
+        } else {
+            val builder = AlertDialog.Builder(context)
+            builder.setMessage("Do you wish to delete ".plus(actualText).plus("?\n" +
+                    "This action cannot be undone."))
+            builder.setPositiveButton("Delete") {
+                    _, _ ->
+                val section: Note = noteDao.findByName(actualText)
+                noteDao.delete(section)
+                mainActivity.prepareMenuData()
+                notifyDataSetChanged()
+                // Close section if it is open
+                if (actualText == mainActivity.openSection) {
+                    // TO IMPLEMENT
+                    // if smaller order exist in notebook, switch to it
+                    // otherwise, switch to any section
+                    // else {
+                    val notebooks: List<Notebook> = noteDao.loadNotebooksInOrder()
+                    val notebookIterator = notebooks.iterator()
+                    var breakAll = false
+                    while (notebookIterator.hasNext() && !breakAll) {
+                        val notebook: Notebook = notebookIterator.next()
+                        val sections: List<Note> = noteDao.loadNotesInOrder(notebook.name)
+                        val sectionIterator = sections.iterator()
+                        while (sectionIterator.hasNext()) {
+                            val section: Note = sectionIterator.next()
+                            mainActivity.loadFromDatabase(section.name)
+                            breakAll = true
+                            break
+                        }
+                    }
+                }
+            }
+            builder.setNegativeButton("Cancel") {
+                    dialog, _ -> dialog.cancel()
+            }
+            val alertDialog = builder.create()
+            alertDialog.show()
+        }
+    }
+
+    private fun showSectionOptions(view: View, actualText: String) {
+        val popup = PopupMenu(context, view)
+        popup.inflate(R.menu.section_drop_down)
+        popup.setOnMenuItemClickListener(PopupMenu.OnMenuItemClickListener { item: MenuItem? ->
+            when (item!!.itemId) {
+                R.id.rename -> {
+                    renameSection(actualText)
+                }
+                R.id.move_up -> {
+                    moveUpSection(actualText)
+                }
+                R.id.move_down -> {
+                    moveDownSection(actualText)
+                }
+                R.id.delete -> {
+                    deleteSection(actualText)
+                }
+            }
+            true
+        })
+        popup.show()
+    }
+
+    private fun renameNotebook(actualText: String) {
+        val builder: AlertDialog.Builder = AlertDialog.Builder(context)
+        builder.setTitle("Enter the new title:")
+        val input = EditText(context)
+        input.hint = ""
+        input.inputType = InputType.TYPE_CLASS_TEXT
+        builder.setView(input)
+        builder.setPositiveButton("Rename") { _, _ ->
+            val notebook: Notebook = noteDao.findNotebookByName(actualText)
+            val notebookName = input.text.toString()
+            val order = notebook.order
+            val newNotebook = Notebook(
+                notebookName,
+                order
+            )
+
+            val sections: List<Note> = noteDao.loadNotesInOrder(notebook.name)
+            val sectionIterator = sections.iterator()
+            while (sectionIterator.hasNext()) {
+                val section: Note = sectionIterator.next()
+                val contents = section.contents
+                val creationTime = section.creationTime
+                val customOrder = section.customOrder
+                val lastEdited = section.lastEdited
+                val name = section.name
+                val notebookName =notebookName
+                val newSection = Note(
+                    contents,
+                    name,
+                    creationTime,
+                    lastEdited,
+                    customOrder,
+                    notebookName
+                )
+                noteDao.delete(section)
+                noteDao.insert(newSection)
+            }
+            noteDao.deleteNotebook(notebook)
+            noteDao.insertNotebook(newNotebook)
+            mainActivity.prepareMenuData()
+            notifyDataSetChanged()
+            mainActivity.hideKeyboard()
+            mainActivity.hideKeyboard()
+        }
+        builder.setNegativeButton("Cancel") { dialog, _ ->
+            mainActivity.hideKeyboard()
+            dialog.cancel()}
+        builder.show()
+    }
+
+    private fun moveUpNotebook(actualText: String) {
+
+        // TO IMPLEMENT
+
+    }
+
+    private fun moveDownNotebook(actualText: String) {
+
+        // TO IMPLEMENT
+        if (false) { // notebook exists with smaller order
+
+            val notebook: Notebook = noteDao.findNotebookByName(actualText)
+            val anotherNotebook: Notebook = noteDao.findNotebookByName(actualText) // TO IMPLEMENT: get from query
+
+            val newNotebook = Notebook(
+                notebook.name,
+                anotherNotebook.order
+            )
+            val newAnotherNotebook = Notebook(
+                anotherNotebook.name,
+                notebook.order
+            )
+            noteDao.deleteNotebook(notebook)
+            noteDao.deleteNotebook(anotherNotebook)
+            noteDao.insertNotebook(newNotebook)
+            noteDao.insertNotebook(newAnotherNotebook)
+            mainActivity.prepareMenuData()
+            notifyDataSetChanged()
+        }
+    }
+
+    private fun deleteNotebook(actualText: String) {
+        if (false) { // TO IMPLEMENT: if num of notebooks == 1
+            val builder = AlertDialog.Builder(context)
+            builder.setMessage("Notebook cannot be deleted because it is the last notebook left.")
+            builder.setNegativeButton("OK") {
+                    dialog, _ -> dialog.cancel()
+            }
+            val alertDialog = builder.create()
+            alertDialog.show()
+        } else {
+            val builder = AlertDialog.Builder(context)
+            builder.setMessage("Do you wish to delete ".plus(actualText).plus("?\n" +
+                    "This action cannot be undone."))
+            builder.setCancelable(false)
+            builder.setPositiveButton("Delete") {
+                    _, _ ->
+                val notebook: Notebook = noteDao.findNotebookByName(actualText)
+                val sections: List<Note> = noteDao.loadNotesInOrder(notebook.name)
+                val sectionIterator = sections.iterator()
+                var sectionOpenInNotebook = false
+                while (sectionIterator.hasNext()) {
+                    val section: Note = sectionIterator.next()
+                    if (section.name == mainActivity.openSection) {
+                        sectionOpenInNotebook = true
+                    }
+                    noteDao.delete(section)
+                }
+                noteDao.deleteNotebook(notebook)
+                mainActivity.prepareMenuData()
+                notifyDataSetChanged()
+                // Close section if it is open in the deleted notebook
+                if (sectionOpenInNotebook) {
+                    val notebooks: List<Notebook> = noteDao.loadNotebooksInOrder()
+                    val notebookIterator = notebooks.iterator()
+                    var breakAll = false
+                    while (notebookIterator.hasNext() && !breakAll) {
+                        val notebook: Notebook = notebookIterator.next()
+                        val sections: List<Note> = noteDao.loadNotesInOrder(notebook.name)
+                        val sectionIterator = sections.iterator()
+                        while (sectionIterator.hasNext()) {
+                            val section: Note = sectionIterator.next()
+                            mainActivity.loadFromDatabase(section.name)
+                            breakAll = true
+                            break
+                        }
+                    }
+                }
+            }
+            builder.setNegativeButton("Cancel") {
+                    dialog, _ -> dialog.cancel()
+            }
+            val alertDialog = builder.create()
+            alertDialog.show()
+        }
+    }
+
+    private fun showNotebookOptions(view: View, actualText: String) {
+        val popup = PopupMenu(context, view)
+        popup.inflate(R.menu.notebook_drop_down)
+        popup.setOnMenuItemClickListener(PopupMenu.OnMenuItemClickListener { item: MenuItem? ->
+            when (item!!.itemId) {
+                R.id.rename -> {
+                    renameNotebook(actualText)
+                }
+                R.id.move_up -> {
+                    moveUpNotebook(actualText)
+                }
+                R.id.move_down -> {
+                    moveDownNotebook(actualText)
+                }
+                R.id.delete -> {
+                    deleteNotebook(actualText)
+                }
+            }
+            true
+        })
+        popup.show()
     }
 }
