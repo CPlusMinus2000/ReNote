@@ -51,7 +51,7 @@ interface NoteDao {
     @Query("UPDATE notes SET last_edited = :lastEdited WHERE name = :name")
     fun update(name: String, lastEdited: Long)
 
-    @Query("SELECT * FROM notes WHERE notebook_name = :notebookName AND custom_order < :customOrder ORDER BY custom_order ASC LIMIT 1")
+    @Query("SELECT * FROM notes WHERE notebook_name = :notebookName AND custom_order < :customOrder ORDER BY custom_order DESC LIMIT 1")
     fun loadPreviousNoteInOrder(notebookName: String, customOrder: Int): Note?
 
     @Query("SELECT * FROM notes WHERE notebook_name = :notebookName AND custom_order > :customOrder ORDER BY custom_order ASC LIMIT 1")
@@ -86,6 +86,9 @@ interface NoteDao {
 
     @Delete
     fun deleteNotebook(notebook: Notebook)
+
+    @Query("DELETE FROM notes")
+    fun deleteAllNotes()
 }
 
 //@Database(entities = [Note::class], version = 1)
