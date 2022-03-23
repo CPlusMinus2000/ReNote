@@ -47,6 +47,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     var gestureDetector: GestureDetector? = null
     private lateinit var recordButton: MenuItem
     private val requestRecordAudioPermission = 200
+    private val requestImagePermission = 400
+    private val requestOpenGalleryIntent = 444
     private var permissions: Array<String> = arrayOf(Manifest.permission.RECORD_AUDIO)
 
     @OptIn(ExperimentalSerializationApi::class)
@@ -207,6 +209,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     editor.stopRecording()
                     recordButton.title = "Record"
                     recording = false
+                }
+            }
+            R.id.action_image -> {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), requestImagePermission)
+                } else {
+                    openGalleryForImage()
                 }
             }
             R.id.action_play -> editor.play()
@@ -506,6 +515,31 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             } else {
                 Toast.makeText(applicationContext, "Please allow microphone access for audio recording!", Toast.LENGTH_SHORT).show()
             }
+        }
+        else if (requestCode == requestImagePermission) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openGalleryForImage()
+            } else {
+                Toast.makeText(applicationContext, "Please allow media access for image insertion!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun openGalleryForImage() {
+        editor.bold()
+        Log.d("thegallery data?.data", "")
+        val intent = Intent(Intent.ACTION_PICK)
+        intent.type = "image/*"
+        startActivityForResult(intent, requestOpenGalleryIntent)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        Log.d("thegallery data?.data", data?.data.toString())
+        if (resultCode == Activity.RESULT_OK && requestCode == requestOpenGalleryIntent){
+            //imageView.setImageURI(data?.data) // handle chosen image
+            editor.addImage(data?.data.toString())
+            Log.d("thegallery data?.data", data?.data.toString())
         }
     }
 }

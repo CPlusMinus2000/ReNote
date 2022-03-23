@@ -71,6 +71,8 @@ class Editor(
 
     fun decreaseFontSize() = webview.evaluateJavascript("changeFontSize('small')", null)
 
+    fun addImage(url: String) = webview.evaluateJavascript("document.execCommand('insertImage', 'false', '${url}')", null)
+
     fun undo() {
         undoing = true
         setContent(undoManager.undo().content)
