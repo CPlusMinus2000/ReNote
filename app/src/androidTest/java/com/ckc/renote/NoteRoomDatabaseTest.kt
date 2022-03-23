@@ -29,6 +29,9 @@ class NoteRoomDatabaseTest : TestCase() {
     private val testNotebook = Notebook(
         bookName, 1, System.currentTimeMillis(), System.currentTimeMillis()
     )
+    private val testNotebook2 = Notebook(
+        "CS2", 2, System.currentTimeMillis(), System.currentTimeMillis()
+    )
 
     @Before
     public override fun setUp() {
@@ -113,6 +116,15 @@ class NoteRoomDatabaseTest : TestCase() {
     }
 
     @Test
+    fun testDeleteAllNotebooks() {
+        dao.insertNotebook(testNotebook)
+        dao.insertNotebook(testNotebook2)
+        dao.deleteAllNotebooks()
+
+        assertEquals(0, dao.notebookCount())
+    }
+
+    @Test
     fun testLoadPreviousNoteOrder() {
         // Clear the database
         dao.deleteAllNotes()
@@ -129,6 +141,55 @@ class NoteRoomDatabaseTest : TestCase() {
 
         val ret3 = dao.loadPreviousNoteInOrder(testNote.notebookName, testNote.customOrder)
         assertEquals(null, ret3)
+    }
+
+    @Test
+    fun testLoadNextNoteOrder() {
+        // Clear the database
+        dao.deleteAllNotes()
+        assertEquals(0, dao.noteCount())
+
+        dao.insert(testNote)
+        dao.insert(testNote2)
+        dao.insert(testNote3)
+        val ret = dao.loadNextNoteInOrder(testNote.notebookName, testNote.customOrder)
+        assertEquals(testNote2, ret)
+
+        val ret2 = dao.loadNextNoteInOrder(testNote2.notebookName, testNote2.customOrder)
+        assertEquals(testNote3, ret2)
+
+        val ret3 = dao.loadNextNoteInOrder(testNote3.notebookName, testNote3.customOrder)
+        assertEquals(null, ret3)
+    }
+
+    @Test
+    fun testLoadPreviousNotebookOrder() {
+        // Clear the database
+        dao.deleteAllNotebooks()
+        assertEquals(0, dao.notebookCount())
+
+        dao.insertNotebook(testNotebook)
+        dao.insertNotebook(testNotebook2)
+        val ret = dao.loadPreviousNotebookInOrder(testNotebook2.order)
+        assertEquals(testNotebook, ret)
+
+        val ret2 = dao.loadPreviousNotebookInOrder(testNotebook.order)
+        assertEquals(null, ret2)
+    }
+
+    @Test
+    fun testLoadNextNotebookOrder() {
+        // Clear the database
+        dao.deleteAllNotebooks()
+        assertEquals(0, dao.notebookCount())
+
+        dao.insertNotebook(testNotebook)
+        dao.insertNotebook(testNotebook2)
+        val ret = dao.loadNextNotebookInOrder(testNotebook.order)
+        assertEquals(testNotebook2, ret)
+
+        val ret2 = dao.loadNextNotebookInOrder(testNotebook2.order)
+        assertEquals(null, ret2)
     }
 
     @After

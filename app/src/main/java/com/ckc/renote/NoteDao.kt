@@ -57,6 +57,12 @@ interface NoteDao {
     @Query("SELECT * FROM notes WHERE notebook_name = :notebookName AND custom_order > :customOrder ORDER BY custom_order ASC LIMIT 1")
     fun loadNextNoteInOrder(notebookName: String, customOrder: Int): Note?
 
+    @Query("SELECT * FROM notebooks WHERE notebook_order < :order ORDER BY notebook_order DESC LIMIT 1")
+    fun loadPreviousNotebookInOrder(order: Int): Notebook?
+
+    @Query("SELECT * FROM notebooks WHERE notebook_order > :order ORDER BY notebook_order ASC LIMIT 1")
+    fun loadNextNotebookInOrder(order: Int): Notebook?
+
     // Count number of notebooks
     @Query("SELECT COUNT(1) FROM notebooks")
     fun notebookCount(): Int
@@ -89,6 +95,9 @@ interface NoteDao {
 
     @Query("DELETE FROM notes")
     fun deleteAllNotes()
+
+    @Query("DELETE FROM notebooks")
+    fun deleteAllNotebooks()
 }
 
 //@Database(entities = [Note::class], version = 1)
