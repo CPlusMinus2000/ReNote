@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 // Annotates class to be a Room Database with a table (entity) of the Note and Notebook classes
-@Database(entities = [Note::class, Notebook::class], version = 5, exportSchema = false)
+@Database(entities = [Note::class, Notebook::class], version = 6, exportSchema = false)
 public abstract class NoteRoomDatabase : RoomDatabase() {
 
     abstract fun noteDao(): NoteDao

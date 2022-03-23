@@ -240,12 +240,14 @@ open class ExpandableListAdapter(
 
         // Set up the buttons
         builder.setPositiveButton("Create") { _, _ ->
-            // Here you get get input text from the Edittext
+            // Here you get input text from the Edittext
             val notebookName = input.text.toString()
             val order = noteDao.getMaxNotebookOrder() + 1
             val newNotebook = Notebook(
                 notebookName,
-                order
+                order,
+                System.currentTimeMillis(),
+                System.currentTimeMillis()
             )
             noteDao.insertNotebook(newNotebook)
             mainActivity.prepareMenuData()
