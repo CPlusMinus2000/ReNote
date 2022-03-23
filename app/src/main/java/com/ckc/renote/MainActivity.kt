@@ -302,6 +302,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 saveFile()
                 showSearchAlertDialog()
             }
+            R.id.action_rewind_options -> showRewindAlertDialog()
             R.id.action_record -> {
                 recordButton = item
                 if (!recording) {
@@ -625,5 +626,40 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         alertDialogGlobal = alertDialog
         updateSearchResults()
         updateSearchInterface(linearLayout)
+    }
+
+    @SuppressLint("ResourceType")
+    private fun showRewindAlertDialog() {
+        val builder = AlertDialog.Builder(this)
+        val view = layoutInflater.inflate(R.layout.rewind_alert_dialog, null)
+        builder.setView(view)
+        builder.setMessage("Rewind options")
+        //val wrapper = view.findViewById<LinearLayout>(R.id.search_wrapper_linear_layout)
+        //val searchHeader = wrapper.findViewById<ConstraintLayout>(R.id.search_header)
+        //val editText = searchHeader.findViewById<EditText>(R.id.search_edit_text)
+        //val scrollView = wrapper.findViewById<ScrollView>(R.id.search_scroll_view)
+        //val linearLayout = scrollView.findViewById<LinearLayout>(R.id.search_linear_layout)
+        /*
+        editText.setText(searchData.textInput)
+        editText.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable) {}
+            override fun beforeTextChanged(
+                s: CharSequence, start: Int,
+                count: Int, after: Int
+            ) {}
+            override fun onTextChanged(
+                s: CharSequence, start: Int,
+                before: Int, count: Int
+            ) {
+                val searchInput = editText.text.toString()
+                searchData.textInput = searchInput
+                Log.i("search", "Search result:".plus(searchInput))
+
+                updateSearchResults()
+                updateSearchInterface(linearLayout)
+            }
+        })*/
+        val alertDialog = builder.create()
+        alertDialog.show()
     }
 }

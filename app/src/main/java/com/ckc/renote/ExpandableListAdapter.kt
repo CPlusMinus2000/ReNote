@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Typeface
 import android.text.InputType
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -317,13 +318,11 @@ open class ExpandableListAdapter(
     }
 
     private fun moveDownSection(actualText: String) {
-
-        // TO IMPLEMENT
-        if (false) { // section exists with smaller order
-
-            val section: Note = noteDao.findByName(actualText)
-            val anotherSection: Note = noteDao.findByName(actualText) // TO IMPLEMENT: get from query
-
+        val section: Note = noteDao.findByName(actualText)
+        val anotherSection = noteDao.loadPreviousNoteInOrder(section.notebookName, section.customOrder)
+        Log.i("reorder", "method called")
+        if (anotherSection != null) { // section exists with smaller order
+            Log.i("reorder", "not null")
             val newSection = Note(
                 section.contents,
                 section.name,
@@ -433,9 +432,13 @@ open class ExpandableListAdapter(
             val notebook: Notebook = noteDao.findNotebookByName(actualText)
             val notebookName = input.text.toString()
             val order = notebook.order
+            val createdAt = notebook.createdAt
+            val lastModified = notebook.lastModified
             val newNotebook = Notebook(
                 notebookName,
-                order
+                order,
+                createdAt,
+                lastModified
             )
             val sections: List<Note> = noteDao.loadNotesInOrder(notebook.name)
             val sectionIterator = sections.iterator()
@@ -487,11 +490,15 @@ open class ExpandableListAdapter(
 
             val newNotebook = Notebook(
                 notebook.name,
-                anotherNotebook.order
+                anotherNotebook.order,
+                notebook.createdAt,
+                notebook.lastModified
             )
             val newAnotherNotebook = Notebook(
                 anotherNotebook.name,
-                notebook.order
+                notebook.order,
+                anotherNotebook.createdAt,
+                anotherNotebook.lastModified
             )
             noteDao.deleteNotebook(notebook)
             noteDao.deleteNotebook(anotherNotebook)
