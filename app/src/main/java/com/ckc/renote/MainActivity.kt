@@ -526,8 +526,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun openGalleryForImage() {
-        editor.bold()
-        Log.d("thegallery data?.data", "")
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
         startActivityForResult(intent, requestOpenGalleryIntent)
@@ -535,11 +533,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        Log.d("thegallery data?.data", data?.data.toString())
         if (resultCode == Activity.RESULT_OK && requestCode == requestOpenGalleryIntent){
-            //imageView.setImageURI(data?.data) // handle chosen image
-            editor.addImage(data?.data.toString())
             Log.d("thegallery data?.data", data?.data.toString())
+            editor.addImage(data?.data.toString())
         }
     }
 }
