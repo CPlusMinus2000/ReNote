@@ -12,5 +12,6 @@ data class Note(
     @ColumnInfo(name = "creation_time") val creationTime: Long,
     @ColumnInfo(name = "last_edited") var lastEdited: Long,
     @ColumnInfo(name = "custom_order") val customOrder: Int,
-    @ColumnInfo(name = "notebook_name") val notebookName: String
+    @ColumnInfo(name = "notebook_name") val notebookName: String,
+    @ColumnInfo(name = "server_id") val serverId: String? = null
 )

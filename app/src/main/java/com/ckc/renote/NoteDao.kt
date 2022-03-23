@@ -43,6 +43,28 @@ interface NoteDao {
     @Query("UPDATE notes SET last_edited = :lastEdited WHERE name = :name")
     fun update(name: String, lastEdited: Long)
 
+    @Query("SELECT * FROM notes WHERE notebook_name = :notebookName AND custom_order < :customOrder ORDER BY custom_order ASC LIMIT 1")
+    fun loadPreviousNoteInOrder(notebookName: String, customOrder: Int): Note?
+
+    @Query("SELECT * FROM notes WHERE notebook_name = :notebookName AND custom_order > :customOrder ORDER BY custom_order ASC LIMIT 1")
+    fun loadNextNoteInOrder(notebookName: String, customOrder: Int): Note?
+
+    // Count number of notebooks
+    @Query("SELECT COUNT(1) FROM notebooks")
+    fun notebookCount(): Int
+
+    // Count total number of notes
+    @Query("SELECT COUNT(1) FROM notes")
+    fun noteCount(): Int
+
+    // Count number of notes in a notebook
+    @Query("SELECT COUNT(1) FROM notes WHERE notebook_name = :notebookName")
+    fun noteCountInNotebook(notebookName: String): Int
+
+    // Select the most recently modified note
+    @Query("SELECT name FROM notes ORDER BY last_edited DESC LIMIT 1")
+    fun getMostRecentlyModifiedNote(): String?
+
     @Delete
     fun delete(note: Note)
 
