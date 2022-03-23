@@ -49,7 +49,7 @@ import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 
-const val SERVER_ADDRESS = "http://10.0.2.2:8080"
+const val SERVER_ADDRESS = "http://54.188.105.181:8080"
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private var expandableListAdapter: ExpandableListAdapter? = null
@@ -116,6 +116,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             Log.d("httpPost", "Response Code: ${conn.responseCode}")
             Log.d("httpPost", "Response Message: ${conn.responseMessage}")
+            // Log.d("httpPost", "Error Message: ${conn.errorStream.bufferedReader().use { it.readText() }}")
 
             val response = conn.inputStream.bufferedReader().use { it.readText() }
 
