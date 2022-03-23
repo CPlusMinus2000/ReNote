@@ -3,11 +3,11 @@ POST http://localhost:8080/
 Content-Type: application/json
 
 {
-  "name": "HTTPNote",
+  "name": "HTTPNoted",
   "contents": "Hello!",
   "creation_time": 3498143,
   "last_edited": 3498144,
-  "custom_order": 4,
+  "custom_order": 5,
   "notebook_name": "My Notebook"
 }
 

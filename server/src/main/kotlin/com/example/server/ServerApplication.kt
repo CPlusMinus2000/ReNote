@@ -22,7 +22,7 @@ fun main(args: Array<String>) {
 
 interface NoteRepository : CrudRepository<Note, String> {
 
-    @Query("select * from notesb")
+    @Query("select * from notesc")
     fun findNotes(): List<Note>
 }
 
@@ -31,8 +31,8 @@ class NoteService(val db: NoteRepository) {
 
     fun findNotes(): List<Note> = db.findNotes()
 
-    fun post(note: Note) {
-        db.save(note)
+    fun post(note: Note): Note {
+        return db.save(note)
     }
 }
 
@@ -42,12 +42,12 @@ class NoteController(val service: NoteService) {
     fun index(): List<Note> = service.findNotes()
 
     @PostMapping
-    fun post(@RequestBody note: Note) {
-        service.post(note)
+    fun post(@RequestBody note: Note): Note {
+        return service.post(note)
     }
 }
 
-@Table("NOTESB")
+@Table("NOTESC")
 data class Note(
     @Id var id: String?,
     var name: String,
