@@ -1,7 +1,5 @@
 package com.ckc.renote
 
-import android.content.Context
-import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import junit.framework.TestCase
@@ -12,7 +10,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class NoteRoomDatabaseTest : TestCase() {
-    private var noteRoomDatabase: NoteRoomDatabase = NoteRoomDatabase.getDatabase(ApplicationProvider.getApplicationContext<Context>())
+    private var noteRoomDatabase: NoteRoomDatabase = NoteRoomDatabase.getDatabase(ApplicationProvider.getApplicationContext())
     private var dao: NoteDao = noteRoomDatabase.noteDao()
     private val noteName = "test"
     private val bookName = "CS"
@@ -29,7 +27,7 @@ class NoteRoomDatabaseTest : TestCase() {
         System.currentTimeMillis(), 3, bookName
     )
     private val testNotebook = Notebook(
-        bookName, 1
+        bookName, 1, System.currentTimeMillis(), System.currentTimeMillis()
     )
 
     @Before

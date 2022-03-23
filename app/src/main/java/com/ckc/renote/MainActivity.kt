@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Typeface
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
@@ -32,9 +33,23 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import org.json.JSONException
+import org.json.JSONObject
+import java.io.BufferedWriter
+import java.io.IOException
+import java.io.OutputStreamWriter
+import java.net.HttpURLConnection
+import java.net.URL
+
+const val SERVER_ADDRESS = "http://10.0.2.2:8080"
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private var expandableListAdapter: ExpandableListAdapter? = null
@@ -73,6 +88,74 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         Log.d("EditorAddress", editor.toString())
         Log.d("currNoteAddress", currNote.toString())
         editor.save(currNote)
+    }
+
+    private fun checkNetworkConnection(): Boolean {
+        val connMgr = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        val networkInfo = connMgr.activeNetworkInfo
+        return networkInfo?.isConnected() ?: false
+    }
+
+    @Throws(IOException::class, JSONException::class)
+    private suspend fun httpPost(myUrl: String): String {
+
+        val result = withContext(Dispatchers.IO) {
+            val url = URL(myUrl)
+            // 1. create HttpURLConnection
+            val conn = url.openConnection() as HttpURLConnection
+            conn.requestMethod = "POST"
+            conn.setRequestProperty("Content-Type", "application/json; charset=utf-8")
+
+
+            // 3. add JSON content to POST request body
+            setPostRequestContent(conn, Json.encodeToString(currNote))
+
+            // 4. make POST request to the given URL
+            conn.connect()
+
+            Log.d("httpPost", "Response Code: ${conn.responseCode}")
+            Log.d("httpPost", "Response Message: ${conn.responseMessage}")
+
+            val response = conn.inputStream.bufferedReader().use { it.readText() }
+
+            // 5. return response message
+            response + ""
+        }
+
+        Log.d("httpPost", result)
+        return result
+    }
+
+    @Throws(IOException::class)
+    private fun setPostRequestContent(conn: HttpURLConnection, jsonObject: String) {
+        val os = conn.outputStream
+        val writer = BufferedWriter(OutputStreamWriter(os, "UTF-8"))
+        writer.write(jsonObject)
+        Log.i(MainActivity::class.java.toString(), jsonObject)
+        writer.flush()
+        writer.close()
+        os.close()
+    }
+
+    private fun saveToServer() {
+        if (checkNetworkConnection()) {
+            val url = SERVER_ADDRESS
+            runBlocking{
+                launch {
+                    try {
+                        val result = httpPost(url)
+                        Log.d("saveToServer", result)
+                        currNote = Json.decodeFromString(result)
+                    } catch (e: Exception) {
+                        Log.d("saveToServer", e.toString())
+                    }
+                }
+            }
+        } else {
+            Log.d("saveToServer", "No network connection available")
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private suspend fun createFileIfDoesntExist(sectionName: String) {
@@ -255,7 +338,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.action_strikethrough -> editor.strikeThrough()
             R.id.action_increase_font_size -> editor.increaseFontSize()
             R.id.action_decrease_font_size -> editor.decreaseFontSize()
-            R.id.action_save -> saveFile()
+            R.id.action_save -> saveToServer()
             R.id.action_settings -> {
                 val intent = Intent(this, SettingsActivity::class.java)
                 startActivity(intent)

@@ -51,10 +51,10 @@ class NoteController(val service: NoteService) {
 data class Note(
     var name: String,
     var contents: String,
-    val creation_time: Long,
-    var last_edited: Long,
-    val custom_order: Int,
-    val notebook_name: String,
-    @Id var server_id: String? = null
+    val creationTime: Long,
+    var lastEdited: Long,
+    val customOrder: Int,
+    val notebookName: String,
+    @Id var serverId: String? = null
 )
 
