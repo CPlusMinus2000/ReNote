@@ -22,7 +22,7 @@ fun main(args: Array<String>) {
 
 interface NoteRepository : CrudRepository<Note, String> {
 
-    @Query("select * from notesc")
+    @Query("select * from notese")
     fun findNotes(): List<Note>
 }
 
@@ -47,14 +47,14 @@ class NoteController(val service: NoteService) {
     }
 }
 
-@Table("NOTESC")
+@Table("NOTESE")
 data class Note(
-    @Id var id: String?,
     var name: String,
     var contents: String,
-    val creation_time: Long,
-    var last_edited: Long,
-    val custom_order: Int,
-    val notebook_name: String
+    val creationTime: Long,
+    var lastEdited: Long,
+    val customOrder: Int,
+    val notebookName: String,
+    @Id var serverId: String? = null
 )
 

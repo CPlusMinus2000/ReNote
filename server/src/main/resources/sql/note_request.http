@@ -7,8 +7,21 @@ Content-Type: application/json
   "contents": "Hello!",
   "creation_time": 3498143,
   "last_edited": 3498144,
-  "custom_order": 5,
+  "custom_order": 6,
   "notebook_name": "My Notebook"
+}
+
+### Post 'TestNote'
+POST http://localhost:8080/
+Content-Type: application/json
+
+{
+  "contents":"\"\"",
+  "name":"data_structures",
+  "creationTime":1648047895257,
+  "lastEdited":1648055242281,
+  "customOrder":1,
+  "notebookName":""
 }
 
 ### Get all the messages
