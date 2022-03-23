@@ -312,17 +312,40 @@ open class ExpandableListAdapter(
     }
 
     private fun moveUpSection(actualText: String) {
-
-        // TO IMPLEMENT
-
+        val section: Note = noteDao.findByName(actualText)
+        val anotherSection = noteDao.loadNextNoteInOrder(section.notebookName, section.customOrder)
+        Log.i("reorder", "method called")
+        if (anotherSection != null) { // section exists with larger order
+            Log.i("reorder", "not null")
+            val newSection = Note(
+                section.contents,
+                section.name,
+                section.creationTime,
+                section.lastEdited,
+                anotherSection.customOrder,
+                section.notebookName
+            )
+            val newAnotherSection = Note(
+                anotherSection.contents,
+                anotherSection.name,
+                anotherSection.creationTime,
+                anotherSection.lastEdited,
+                section.customOrder,
+                anotherSection.notebookName
+            )
+            noteDao.delete(section)
+            noteDao.delete(anotherSection)
+            noteDao.insert(newSection)
+            noteDao.insert(newAnotherSection)
+            mainActivity.prepareMenuData()
+            notifyDataSetChanged()
+        }
     }
 
     private fun moveDownSection(actualText: String) {
         val section: Note = noteDao.findByName(actualText)
         val anotherSection = noteDao.loadPreviousNoteInOrder(section.notebookName, section.customOrder)
-        Log.i("reorder", "method called")
         if (anotherSection != null) { // section exists with smaller order
-            Log.i("reorder", "not null")
             val newSection = Note(
                 section.contents,
                 section.name,
@@ -482,7 +505,10 @@ open class ExpandableListAdapter(
 
     private fun moveDownNotebook(actualText: String) {
 
-        // TO IMPLEMENT
+        val notebook: Notebook = noteDao.findNotebookByName(actualText)
+        val anotherNotebook = noteDao.loadPreviousNoteInOrder(section.notebookName, section.customOrder)
+        if (anotherSection != null) { // section exists with smaller order
+
         if (false) { // notebook exists with smaller order
 
             val notebook: Notebook = noteDao.findNotebookByName(actualText)
