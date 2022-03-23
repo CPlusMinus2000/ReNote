@@ -58,7 +58,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private val requestRecordAudioPermission = 200
     private var permissions: Array<String> = arrayOf(Manifest.permission.RECORD_AUDIO)
 
-
     @OptIn(ExperimentalSerializationApi::class)
     fun loadFromDatabase(sectionName: String) {
         Log.d("loadFromDatabase", db.toString())
@@ -205,25 +204,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     return true
                 }
             })
-
-        /*
-        val navView = drawer.findViewById<NavigationView>(R.id.nav_view)
-
-
-        var orderSpinner: Spinner = findViewById(R.id.order_spinner)
-
-        var orderSpinnerOptions = arrayOf("Option1", "Option 2", "Option3")
-        orderSpinner.adapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, orderSpinnerOptions)
-        orderSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener{
-            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onNothingSelected(p0: AdapterView<*>?) {
-                TODO("Not yet implemented")
-            }
-
-        }**/
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -469,14 +449,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         // TO IMPLEMENT:
         // true if section contains searchData.textInput, false otherwise
-        //var contents = section.contents
-        //contents.replace("\\<.*?>", " ")
-        val contents: String = section.contents.replace("\\<.*?>", " ")
-
-        Log.d("dbdbdb", "BEFORE: ".plus("\n") .plus(section.contents).plus("\n"))
-        Log.d("dbdbdb", "AFTER: \n".plus(contents).plus("\n\n"))
-
-        return contents.contains(searchData.textInput, ignoreCase = true)
+        var target = section.contents
+        target = target.replace("<(.*?)>".toRegex(), " ")
+        target = target.replace("\\\\u003C(.*?)>".toRegex()," ");
+        target = target.replace("&nbsp;", " ")
+        target = target.replace("&amp;", " ")
+        return target.contains(searchData.textInput, ignoreCase = true)
     }
 
     private fun updateSearchResults() {
