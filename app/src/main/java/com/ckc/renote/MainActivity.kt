@@ -22,8 +22,6 @@ import android.view.animation.ScaleAnimation
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import android.widget.ExpandableListView.OnGroupClickListener
-import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -63,8 +61,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var noteDao: NoteDao
     private var recording: Boolean = false
     private lateinit var editor: Editor
-    private var openSection =
-        "data_structures" // REDUNDANT - remove when database will save last open page
     private var mScale = 1f
     private var mScaleGestureDetector: ScaleGestureDetector? = null
     private var gestureDetector: GestureDetector? = null
@@ -322,12 +318,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
          * NavigationUI.setupWithNavController(navigationView, navController); */
 
         editor = Editor(findViewById(R.id.editor), db.noteDao())
-        loadFromDatabase(openSection)
+        handler.postDelayed(Runnable {
+            val saved = noteDao.getMostRecentlyModifiedNote() ?: "data_structures"
+            currNote = noteDao.findByName(saved)
+            editor.setInitContent(currNote.contents)
+            supportActionBar?.title = saved
+        }, 100)
+
         expandableListView?.let { expandableListAdapter?.initiateExpandableListView(it) }
         expandableListAdapter?.initiateDao(noteDao)
         expandableListAdapter?.initiateMainActivity(this)
-        supportActionBar?.title =
-            "" // hides an app name in the toolbar // REPLACE WITH CURRENT SECTION NAME
+        supportActionBar?.title = ""
 
         // Page scaling test
         /*
@@ -551,6 +552,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onPause() {
         super.onPause()
         handler.removeCallbacks(runnable!!)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        saveFile()
     }
 
     fun Activity.hideKeyboard() {
