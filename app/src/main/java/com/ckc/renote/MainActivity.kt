@@ -74,7 +74,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var permissions: Array<String> = arrayOf(Manifest.permission.RECORD_AUDIO)
 
     @OptIn(ExperimentalSerializationApi::class)
-    private fun loadFromDatabase(sectionName: String) {
+    fun loadFromDatabase(sectionName: String) {
+        Log.d("loadFromDatabase", db.toString())
         currNote = noteDao.findByName(sectionName)
         editor.load(currNote.contents)
         supportActionBar?.title = sectionName
@@ -230,16 +231,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private suspend fun createFileIfDoesntExist(sectionName: String) {
-        if (noteDao.noteExists(sectionName) == 0) {
-            val currTime = System.currentTimeMillis()
-            val note = Note("", sectionName, currTime, currTime,
-                    noteDao.getMaxCustomOrder() + 1, "")
-
-            noteDao.insertAll(note)
-        }
-    }
-
     private fun createMissingFiles() {
         // If there is not at least 1 Notebook and 1 Section, create them
         val notebookCount = noteDao.notebookCount()
@@ -299,7 +290,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         this.noteDao = db.noteDao()
 
         createMissingFiles()
-
         expandableListView = findViewById(R.id.expandableListView)
         prepareMenuData()
         populateExpandableList()
@@ -343,7 +333,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
          * NavController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
          * NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
          * NavigationUI.setupWithNavController(navigationView, navController); */
-
         editor = Editor(findViewById(R.id.editor), db.noteDao())
         handler.postDelayed(Runnable {
             val saved = noteDao.getMostRecentlyModifiedNote() ?: "data_structures"
@@ -586,6 +575,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onStop() {
         super.onStop()
         saveFile()
+        //db.clearAllTables() // temporary
     }
 
     fun Activity.hideKeyboard() {
@@ -661,13 +651,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (searchData.textInput == "") {
             return false
         }
-        // TO IMPLEMENT:
         // true if section contains searchData.textInput, false otherwise
         var target = section.contents
-        target = target.replace("<(.*?)>".toRegex(), " ")
-        target = target.replace("\\\\u003C(.*?)>".toRegex()," ")
-        target = target.replace("&nbsp;", " ")
-        target = target.replace("&amp;", " ")
+        target = target.replace("<(.*?)>".toRegex(), "")
+        target = target.replace("\\\\u003C(.*?)>".toRegex(),"")
+        target = target.replace("&nbsp;", "")
+        target = target.replace("&amp;", "")
         return target.contains(searchData.textInput, ignoreCase = true)
     }
 
@@ -722,13 +711,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     @SuppressLint("ResourceType")
     private fun showSearchAlertDialog() {
-
         val builder = AlertDialog.Builder(this)
-
         val view = layoutInflater.inflate(R.layout.search_alert_dialog, null)
         builder.setView(view)
         builder.setMessage("Search all notes for matching text")
-
         val wrapper = view.findViewById<LinearLayout>(R.id.search_wrapper_linear_layout)
         val searchHeader = wrapper.findViewById<ConstraintLayout>(R.id.search_header)
         val editText = searchHeader.findViewById<EditText>(R.id.search_edit_text)
@@ -737,13 +723,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         editText.setText(searchData.textInput)
         editText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable) {}
-
             override fun beforeTextChanged(
                 s: CharSequence, start: Int,
                 count: Int, after: Int
-            ) {
-            }
-
+            ) {}
             override fun onTextChanged(
                 s: CharSequence, start: Int,
                 before: Int, count: Int
@@ -761,5 +744,40 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         alertDialogGlobal = alertDialog
         updateSearchResults()
         updateSearchInterface(linearLayout)
+    }
+
+    @SuppressLint("ResourceType")
+    private fun showRewindAlertDialog() {
+        val builder = AlertDialog.Builder(this)
+        val view = layoutInflater.inflate(R.layout.rewind_alert_dialog, null)
+        builder.setView(view)
+        builder.setMessage("Rewind options")
+        //val wrapper = view.findViewById<LinearLayout>(R.id.search_wrapper_linear_layout)
+        //val searchHeader = wrapper.findViewById<ConstraintLayout>(R.id.search_header)
+        //val editText = searchHeader.findViewById<EditText>(R.id.search_edit_text)
+        //val scrollView = wrapper.findViewById<ScrollView>(R.id.search_scroll_view)
+        //val linearLayout = scrollView.findViewById<LinearLayout>(R.id.search_linear_layout)
+        /*
+        editText.setText(searchData.textInput)
+        editText.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable) {}
+            override fun beforeTextChanged(
+                s: CharSequence, start: Int,
+                count: Int, after: Int
+            ) {}
+            override fun onTextChanged(
+                s: CharSequence, start: Int,
+                before: Int, count: Int
+            ) {
+                val searchInput = editText.text.toString()
+                searchData.textInput = searchInput
+                Log.i("search", "Search result:".plus(searchInput))
+
+                updateSearchResults()
+                updateSearchInterface(linearLayout)
+            }
+        })*/
+        val alertDialog = builder.create()
+        alertDialog.show()
     }
 }

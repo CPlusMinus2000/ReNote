@@ -1,8 +1,9 @@
 package com.ckc.renote
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room.*
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 @Serializable
 @Entity(tableName = "notes")
@@ -16,3 +17,23 @@ data class Note(
     @ColumnInfo(name = "recording", typeAffinity = ColumnInfo.TEXT) val recording: Recording? = null,
     @ColumnInfo(name = "server_id") val serverId: String? = null
 )
+
+class Converters {
+    @TypeConverter
+    fun fromRecording(recording: Recording?): String? {
+        return if (recording == null) {
+            null
+        } else {
+            Json.encodeToString(recording)
+        }
+    }
+
+    @TypeConverter
+    fun toRecording(recording: String?): Recording? {
+        return if (recording == null) {
+            null
+        } else {
+            Json.decodeFromString<Recording>(recording)
+        }
+    }
+}

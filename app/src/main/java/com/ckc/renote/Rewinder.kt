@@ -10,27 +10,7 @@ import java.io.File
 import java.io.IOException
 
 @Serializable
-data class Recording(var audio: ByteArray, var times: MutableList<Long>, var states: MutableList<State>) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as Recording
-
-        if (!audio.contentEquals(other.audio)) return false
-        if (times != other.times) return false
-        if (states != other.states) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = audio.contentHashCode()
-        result = 31 * result + times.hashCode()
-        result = 31 * result + states.hashCode()
-        return result
-    }
-}
+data class Recording(var audio: String, var times: MutableList<Long>, var states: MutableList<State>)
 
 class Rewinder {
     private var audioRecorder: MediaRecorder? = null
@@ -56,7 +36,7 @@ class Rewinder {
             }
         }
 
-        recording = Recording(ByteArray(1), mutableListOf(), mutableListOf())
+        recording = Recording("", mutableListOf(), mutableListOf())
         initialTime = System.currentTimeMillis()
         recording.states.add(state)
         isRecording = true
@@ -80,7 +60,7 @@ class Rewinder {
         audioRecorder = null
 
         val temp = File(tempFile)
-        recording.audio = temp.readBytes()
+        recording.audio = String(temp.readBytes())
         temp.delete()
     }
 
@@ -88,7 +68,7 @@ class Rewinder {
         editor.setEditable(false)
         editor.setContent(recording.states[0].content)
         val temp = File(tempFile)
-        temp.writeBytes(recording.audio)
+        temp.writeBytes(recording.audio.toByteArray())
         audioPlayer = MediaPlayer().apply {
             try {
                 setDataSource(tempFile)
