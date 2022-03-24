@@ -231,25 +231,34 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private suspend fun createFileIfDoesntExist(sectionName: String) {
-        if (noteDao.noteExists(sectionName) == 0) {
-            val currTime = System.currentTimeMillis()
-            val note =
-                Note("", sectionName, currTime, currTime, noteDao.getMaxCustomOrder() + 1, "")
-            noteDao.insertAll(note)
-        }
-    }
-
     private fun createMissingFiles() {
-        // this method is temporary
-        // its only needed to make sure that the Friday's demo can run on any device
-        runBlocking {
-            launch {
-                createFileIfDoesntExist("data_structures")
-                createFileIfDoesntExist("functional_programming")
-                createFileIfDoesntExist("object_oriented_programming")
-                createFileIfDoesntExist("selection_interview")
-                createFileIfDoesntExist("information_gathering_interview")
+        // If there is not at least 1 Notebook and 1 Section, create them
+        val notebookCount = noteDao.notebookCount()
+        val sectionCount = noteDao.noteCount()
+        if (notebookCount == 0) {
+            val newNotebook = Notebook(
+                "New Notebook",
+                1,
+                System.currentTimeMillis(),
+                System.currentTimeMillis()
+            )
+            noteDao.insertNotebook(newNotebook)
+        }
+        if (sectionCount == 0) {
+            val notebooks: List<Notebook> = noteDao.loadNotebooksInOrder()
+            val notebookIterator = notebooks.iterator()
+            while (notebookIterator.hasNext()) {
+                val notebook: Notebook = notebookIterator.next()
+                val section = Note(
+                    "",
+                    "New Section",
+                    System.currentTimeMillis(),
+                    System.currentTimeMillis(),
+                    1,
+                    notebook.name
+                )
+                noteDao.insert(section)
+                break
             }
         }
     }
@@ -280,6 +289,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         this.db = NoteRoomDatabase.getDatabase(applicationContext)
         this.noteDao = db.noteDao()
 
+        createMissingFiles()
         expandableListView = findViewById(R.id.expandableListView)
         prepareMenuData()
         populateExpandableList()
@@ -329,6 +339,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             currNote = noteDao.findByName(saved)
             editor.setInitContent(currNote.contents)
             supportActionBar?.title = saved
+            openSection = saved
         }, 100)
 
         expandableListView?.let { expandableListAdapter?.initiateExpandableListView(it) }
@@ -564,6 +575,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onStop() {
         super.onStop()
         saveFile()
+        //db.clearAllTables() // temporary
     }
 
     fun Activity.hideKeyboard() {
@@ -642,7 +654,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // true if section contains searchData.textInput, false otherwise
         var target = section.contents
         target = target.replace("<(.*?)>".toRegex(), "")
-        target = target.replace("\\\\u003C(.*?)>".toRegex(),"");
+        target = target.replace("\\\\u003C(.*?)>".toRegex(),"")
         target = target.replace("&nbsp;", "")
         target = target.replace("&amp;", "")
         return target.contains(searchData.textInput, ignoreCase = true)

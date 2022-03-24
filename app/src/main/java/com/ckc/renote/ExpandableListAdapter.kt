@@ -373,7 +373,7 @@ open class ExpandableListAdapter(
     }
 
     private fun deleteSection(actualText: String) {
-
+        Log.i("note count", "Note Count: ".plus(noteDao.noteCount()))
         if (noteDao.noteCount() == 1) {
             val builder = AlertDialog.Builder(context)
             builder.setMessage("Section cannot be deleted because it is the last section left.")
