@@ -35,4 +35,5 @@
     <string name="strikethrough">Strikethrough</string>
     <string name="undo">Undo</string>
     <string name="redo">Redo</string>
+    <string name="load">Load</string>
 </resources>
