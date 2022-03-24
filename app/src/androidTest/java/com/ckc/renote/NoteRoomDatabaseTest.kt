@@ -26,6 +26,13 @@ class NoteRoomDatabaseTest : TestCase() {
         "This is a test3", "test3", System.currentTimeMillis(),
         System.currentTimeMillis(), 3, bookName
     )
+    private val testNote4 = Note(
+        "This is a test4", "test4", System.currentTimeMillis(),
+        System.currentTimeMillis(), 4, bookName, Recording(
+            "This isn't really audio but whatever",
+            mutableListOf(1L, 2L, 3L), mutableListOf(State("haha"), State("hoho"), State("hehe"))
+        )
+    )
     private val testNotebook = Notebook(
         bookName, 1, System.currentTimeMillis(), System.currentTimeMillis()
     )
@@ -48,6 +55,13 @@ class NoteRoomDatabaseTest : TestCase() {
         dao.insert(testNote)
         val ret = dao.findByName(noteName)
         assertEquals(testNote, ret)
+    }
+
+    @Test
+    fun testInsertRecording() {
+        dao.insert(testNote4)
+        val ret = dao.findByName(testNote4.name)
+        assertEquals(testNote4, ret)
     }
 
     @Test

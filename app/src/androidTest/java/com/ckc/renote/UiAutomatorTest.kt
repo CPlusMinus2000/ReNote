@@ -38,20 +38,46 @@ class UiAutomatorTest {
     @Test
     fun testEnteringText() {
         val editor: UiObject = device.findObject(UiSelector().className("android.widget.EditText"))
-        editor.setText("Does this work?")
+        editor.text = "Does this work?"
         sleep(500)
-        assertThat(editor.getText(), `is`(equalTo("Does this work?")))
+        assertThat(editor.text, `is`(equalTo("Does this work?")))
     }
 
     @Test
     fun testSettingsPreservesText() {
         val editor: UiObject = device.findObject(UiSelector().className("android.widget.EditText"))
-        editor.setText("This text should be preserved")
+        editor.text = "This text should be preserved"
 
         val settings: UiObject = device.findObject(UiSelector().resourceId("com.ckc.renote:id/action_settings"))
         settings.click()
 
         device.pressBack()
-        assertThat(editor.getText(), `is`(equalTo("This text should be preserved")))
+        assertThat(editor.text, `is`(equalTo("This text should be preserved")))
+    }
+
+    @Test
+    fun happyPathTimer() {
+        val startTime = System.currentTimeMillis()
+        val editor: UiObject = device.findObject(UiSelector().className("android.widget.EditText"))
+        editor.text = "This is a test that measures how much time certain actions take to complete."
+
+        val bold: UiObject = device.findObject(UiSelector().resourceId("com.ckc.renote:id/action_bold"))
+        bold.click()
+
+        editor.text += " This is some more text. It is bolded."
+        bold.click()
+
+        editor.text += " This is yet more text. It is not bolded."
+
+        val save: UiObject = device.findObject(UiSelector().resourceId("com.ckc.renote:id/action_save"))
+        val load: UiObject = device.findObject(UiSelector().resourceId("com.ckc.renote:id/action_load"))
+        save.click()
+
+        editor.text += " Some more text. I hope it doesn't get deleted..."
+        load.click()
+
+        val endTime = System.currentTimeMillis()
+        val timeTaken = endTime - startTime
+        println("Time taken: $timeTaken")
     }
 }
