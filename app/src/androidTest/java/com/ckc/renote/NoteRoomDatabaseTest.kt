@@ -192,6 +192,25 @@ class NoteRoomDatabaseTest : TestCase() {
         assertEquals(null, ret2)
     }
 
+    @Test
+    fun testGetMostRecentNote() {
+        // Clear the database
+        dao.deleteAllNotes()
+        assertEquals(0, dao.noteCount())
+
+        dao.insert(testNote)
+        dao.insert(testNote2)
+        testNote3.lastEdited = System.currentTimeMillis()
+        dao.insert(testNote3)
+        val ret = dao.getMostRecentlyModifiedNote()
+        assertEquals(testNote3.name, ret)
+
+        testNote2.lastEdited = System.currentTimeMillis()
+        dao.insert(testNote2)
+        val ret2 = dao.getMostRecentlyModifiedNote()
+        assertEquals(testNote2.name, ret2)
+    }
+
     @After
     public override fun tearDown() {}
 }
