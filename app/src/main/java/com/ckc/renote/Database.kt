@@ -3,7 +3,7 @@ package com.ckc.renote
 import android.util.Log
 import java.sql.*
 
-class RawDatabase() {
+class RawDatabase {
     // Interface class for accessing the database
     private var conn: Connection? = null
     private var tableName: String = "Notes"

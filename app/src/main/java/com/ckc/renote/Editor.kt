@@ -4,9 +4,6 @@ import android.annotation.SuppressLint
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import java.io.File
 
 @SuppressLint("SetJavaScriptEnabled")
 class Editor(
@@ -17,12 +14,17 @@ class Editor(
     private val undoManager: UndoManager = UndoManager()
     private var undoing = false
     private val rewinder: Rewinder = Rewinder()
+    private var initContent: String = ""
 
     init {
         webview.webViewClient = this
-        webview.loadUrl("file:///android_res/raw/editor.html")
         webview.settings.javaScriptEnabled = true
         WebView.setWebContentsDebuggingEnabled(true)
+    }
+
+    override fun onPageFinished(view: WebView?, url: String?) {
+        super.onPageFinished(view, url)
+        load(initContent)
     }
 
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
@@ -39,6 +41,11 @@ class Editor(
 
     fun setEditable(editable: Boolean) = webview.evaluateJavascript(
         "document.getElementById('editor').contentEditable = $editable", null)
+
+    fun setInitContent(content: String) {
+        initContent = content
+        webview.loadUrl("file:///android_res/raw/editor.html")
+    }
 
     fun setContent(text: String) {
         webview.evaluateJavascript("document.getElementById('editor').innerHTML = \"$text\"") {
@@ -70,6 +77,8 @@ class Editor(
     fun increaseFontSize() = webview.evaluateJavascript("changeFontSize('big')", null)
 
     fun decreaseFontSize() = webview.evaluateJavascript("changeFontSize('small')", null)
+
+    fun addImage(url: String) = webview.evaluateJavascript("document.execCommand('insertImage', 'false', '${url}')", null)
 
     fun undo() {
         undoing = true

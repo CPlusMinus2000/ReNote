@@ -6,8 +6,8 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Typeface
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.os.Bundle
 import android.os.Handler
@@ -40,7 +40,6 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.json.JSONException
-import org.json.JSONObject
 import java.io.BufferedWriter
 import java.io.IOException
 import java.io.OutputStreamWriter
@@ -70,13 +69,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var alertDialogGlobal: AlertDialog
     private lateinit var recordButton: MenuItem
     private val requestRecordAudioPermission = 200
+    private val requestImagePermission = 400
+    private val requestOpenGalleryIntent = 444
     private var permissions: Array<String> = arrayOf(Manifest.permission.RECORD_AUDIO)
 
     @OptIn(ExperimentalSerializationApi::class)
     fun loadFromDatabase(sectionName: String) {
         Log.d("loadFromDatabase", db.toString())
         currNote = noteDao.findByName(sectionName)
-        Log.d("loadFromDatabase", currNote.toString())
         editor.load(currNote.contents)
         supportActionBar?.title = sectionName
         openSection = sectionName
@@ -100,14 +100,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     @Throws(IOException::class, JSONException::class)
     private suspend fun httpPost(myUrl: String): String {
-
         val result = withContext(Dispatchers.IO) {
             val url = URL(myUrl)
             // 1. create HttpURLConnection
             val conn = url.openConnection() as HttpURLConnection
             conn.requestMethod = "POST"
             conn.setRequestProperty("Content-Type", "application/json; charset=utf-8")
-
 
             // 3. add JSON content to POST request body
             setPostRequestContent(conn, Json.encodeToString(currNote))
@@ -129,12 +127,32 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return result
     }
 
+    @Throws(IOException::class, JSONException::class)
+    private suspend fun httpGet(myUrl: String): String {
+        val result = withContext(Dispatchers.IO) {
+            val url = URL(myUrl)
+            // 1. create HttpURLConnection
+            val conn = url.openConnection() as HttpURLConnection
+            conn.requestMethod = "GET"
+            conn.setRequestProperty("Content-Type", "application/json; charset=utf-8")
+
+            // 4. make GET request to the given URL
+            conn.connect()
+            val response = conn.inputStream.bufferedReader().use { it.readText() }
+
+            // 5. return response message
+            response + ""
+        }
+
+        Log.d("httpGet", result)
+        return result
+    }
+
     @Throws(IOException::class)
     private fun setPostRequestContent(conn: HttpURLConnection, jsonObject: String) {
         val os = conn.outputStream
         val writer = BufferedWriter(OutputStreamWriter(os, "UTF-8"))
         writer.write(jsonObject)
-        Log.i(MainActivity::class.java.toString(), jsonObject)
         writer.flush()
         writer.close()
         os.close()
@@ -143,19 +161,72 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun saveToServer() {
         if (checkNetworkConnection()) {
             val url = SERVER_ADDRESS
+            var saved = false
             runBlocking{
                 launch {
                     try {
                         val result = httpPost(url)
                         Log.d("saveToServer", result)
                         currNote = Json.decodeFromString(result)
+                        saved = true
                     } catch (e: Exception) {
                         Log.d("saveToServer", e.toString())
                     }
                 }
             }
+
+            if (saved) {
+                Toast.makeText(this, "Saved to server", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Failed to save to server", Toast.LENGTH_SHORT).show()
+            }
         } else {
             Log.d("saveToServer", "No network connection available")
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun loadFromServer() {
+        if (checkNetworkConnection()) {
+            val url = SERVER_ADDRESS
+            var loaded = false
+            runBlocking{
+                launch {
+                    try {
+                        val result = httpGet(url)
+                        val noteList: List<Note> = Json.decodeFromString(result)
+                        if (currNote.serverId != null) {
+                            for (note in noteList) {
+                                if (note.serverId == currNote.serverId) {
+                                    currNote = note
+                                    loaded = true
+                                    editor.load(currNote.contents)
+                                    break
+                                }
+                            }
+                        }
+
+                        if (!loaded) {
+                            for (note in noteList) {
+                                if (note.name == currNote.name && note.notebookName == currNote.notebookName) {
+                                    currNote = note
+                                    loaded = true
+                                    editor.load(currNote.contents)
+                                    break
+                                }
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.d("loadFromServer", e.toString())
+                    }
+                }
+            }
+
+            if (!loaded) {
+                Toast.makeText(this, "Note not found", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Log.d("loadFromServer", "No network connection available")
             Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show()
         }
     }
@@ -249,14 +320,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
          * R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
          * .setOpenableLayout(drawer)
          * .build();
-         * NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+         * NavController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
          * NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
          * NavigationUI.setupWithNavController(navigationView, navController); */
         editor = Editor(findViewById(R.id.editor), db.noteDao())
-        openSection = "data_structures"
-        loadFromDatabase(openSection)
-        openSection = noteDao.getMostRecentlyModifiedNote().toString()
-        loadFromDatabase(openSection)
+        handler.postDelayed(Runnable {
+            val saved = noteDao.getMostRecentlyModifiedNote() ?: "data_structures"
+            currNote = noteDao.findByName(saved)
+            editor.setInitContent(currNote.contents)
+            supportActionBar?.title = saved
+        }, 100)
+
         expandableListView?.let { expandableListAdapter?.initiateExpandableListView(it) }
         expandableListAdapter?.initiateDao(noteDao)
         expandableListAdapter?.initiateMainActivity(this)
@@ -325,6 +399,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     recording = false
                 }
             }
+            R.id.action_image -> {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), requestImagePermission)
+                } else {
+                    openGalleryForImage()
+                }
+            }
             R.id.action_play -> editor.play()
             R.id.action_undo -> editor.undo()
             R.id.action_redo -> editor.redo()
@@ -335,6 +416,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.action_increase_font_size -> editor.increaseFontSize()
             R.id.action_decrease_font_size -> editor.decreaseFontSize()
             R.id.action_save -> saveToServer()
+            R.id.action_load -> loadFromServer()
             R.id.action_settings -> {
                 val intent = Intent(this, SettingsActivity::class.java)
                 startActivity(intent)
@@ -423,19 +505,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if (!headerList[groupPosition].hasChildren) {
 
                     /**
-                     * WebView webView = findViewById(R.id.webView);
+                     * WebView = findViewById(R.id.webView);
                      * webView.loadUrl(headerList.get(groupPosition).url);
                      * onBackPressed(); */
                     /**
-                     * WebView webView = findViewById(R.id.webView);
+                     * WebView = findViewById(R.id.webView);
                      * webView.loadUrl(headerList.get(groupPosition).url);
                      * onBackPressed(); */
                     /**
-                     * WebView webView = findViewById(R.id.webView);
+                     * WebView = findViewById(R.id.webView);
                      * webView.loadUrl(headerList.get(groupPosition).url);
                      * onBackPressed(); */
                     /**
-                     * WebView webView = findViewById(R.id.webView);
+                     * WebView = findViewById(R.id.webView);
                      * webView.loadUrl(headerList.get(groupPosition).url);
                      * onBackPressed(); */
                 }
@@ -477,6 +559,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onPause() {
         super.onPause()
         handler.removeCallbacks(runnable!!)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        saveFile()
     }
 
     fun Activity.hideKeyboard() {
@@ -524,6 +611,27 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     Toast.LENGTH_SHORT
                 ).show()
             }
+        }
+        else if (requestCode == requestImagePermission) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openGalleryForImage()
+            } else {
+                Toast.makeText(applicationContext, "Please allow media access for image insertion!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun openGalleryForImage() {
+        val intent = Intent(Intent.ACTION_PICK)
+        intent.type = "image/*"
+        startActivityForResult(intent, requestOpenGalleryIntent)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK && requestCode == requestOpenGalleryIntent){
+            Log.d("thegallery data?.data", data?.data.toString())
+            editor.addImage(data?.data.toString())
         }
     }
 

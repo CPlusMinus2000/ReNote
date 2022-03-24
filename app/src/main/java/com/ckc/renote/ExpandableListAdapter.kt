@@ -307,7 +307,8 @@ open class ExpandableListAdapter(
         }
         builder.setNegativeButton("Cancel") { dialog, _ ->
             mainActivity.hideKeyboard()
-            dialog.cancel()}
+            dialog.cancel()
+        }
         builder.show()
     }
 

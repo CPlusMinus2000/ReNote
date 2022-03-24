@@ -30,6 +30,10 @@
           android:icon="@drawable/ic_baseline_redo_24"
           android:title="@string/redo"
           app:showAsAction="always"/>
+    <item android:id="@+id/action_image"
+          android:icon="@drawable/ic_baseline_add_photo_alternate_24"
+          android:title="@string/image"
+          app:showAsAction="always"/>
     <item android:id="@+id/action_bold"
           android:icon="@drawable/ic_baseline_format_bold_24"
           android:title="@string/bold"
@@ -55,8 +59,12 @@
           android:title="@string/decrease_font_size"
           app:showAsAction="always"/>
     <item android:id="@+id/action_save"
-          android:icon="@drawable/ic_baseline_save_24"
+          android:icon="@drawable/ic_baseline_cloud_upload_24"
           android:title="@string/save"
+          app:showAsAction="always"/>
+    <item android:id="@+id/action_load"
+          android:icon="@drawable/ic_baseline_cloud_download_24"
+          android:title="@string/load"
           app:showAsAction="always"/>
     <item android:id="@+id/action_settings"
           android:icon="@drawable/ic_baseline_settings_24"
