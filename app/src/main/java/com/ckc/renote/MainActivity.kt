@@ -42,7 +42,6 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.json.JSONException
-import org.json.JSONObject
 import java.io.BufferedWriter
 import java.io.IOException
 import java.io.OutputStreamWriter
@@ -318,7 +317,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
          * R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
          * .setOpenableLayout(drawer)
          * .build();
-         * NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+         * NavController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
          * NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
          * NavigationUI.setupWithNavController(navigationView, navController); */
 
@@ -498,19 +497,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if (!headerList[groupPosition].hasChildren) {
 
                     /**
-                     * WebView webView = findViewById(R.id.webView);
+                     * WebView = findViewById(R.id.webView);
                      * webView.loadUrl(headerList.get(groupPosition).url);
                      * onBackPressed(); */
                     /**
-                     * WebView webView = findViewById(R.id.webView);
+                     * WebView = findViewById(R.id.webView);
                      * webView.loadUrl(headerList.get(groupPosition).url);
                      * onBackPressed(); */
                     /**
-                     * WebView webView = findViewById(R.id.webView);
+                     * WebView = findViewById(R.id.webView);
                      * webView.loadUrl(headerList.get(groupPosition).url);
                      * onBackPressed(); */
                     /**
-                     * WebView webView = findViewById(R.id.webView);
+                     * WebView = findViewById(R.id.webView);
                      * webView.loadUrl(headerList.get(groupPosition).url);
                      * onBackPressed(); */
                 }
@@ -610,7 +609,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // true if section contains searchData.textInput, false otherwise
         var target = section.contents
         target = target.replace("<(.*?)>".toRegex(), " ")
-        target = target.replace("\\\\u003C(.*?)>".toRegex()," ");
+        target = target.replace("\\\\u003C(.*?)>".toRegex()," ")
         target = target.replace("&nbsp;", " ")
         target = target.replace("&amp;", " ")
         return target.contains(searchData.textInput, ignoreCase = true)
