@@ -158,16 +158,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun saveToServer() {
         if (checkNetworkConnection()) {
             val url = SERVER_ADDRESS
+            var saved = false
             runBlocking{
                 launch {
                     try {
                         val result = httpPost(url)
                         Log.d("saveToServer", result)
                         currNote = Json.decodeFromString(result)
+                        saved = true
                     } catch (e: Exception) {
                         Log.d("saveToServer", e.toString())
                     }
                 }
+            }
+
+            if (saved) {
+                Toast.makeText(this, "Saved to server", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Failed to save to server", Toast.LENGTH_SHORT).show()
             }
         } else {
             Log.d("saveToServer", "No network connection available")
