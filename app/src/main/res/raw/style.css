@@ -4,3 +4,6 @@
     min-width: 840px;
     min-height: 1188px;
 }
+img {
+    max-width: 600px;
+}
