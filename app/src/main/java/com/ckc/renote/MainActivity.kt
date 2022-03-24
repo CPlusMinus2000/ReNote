@@ -54,7 +54,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var expandableListView: ExpandableListView? = null
     private var headerList: MutableList<MenuModel> = ArrayList()
     private var childList = HashMap<MenuModel, List<MenuModel>?>()
-    private var handler: Handler = Handler() // used for autosave looper
+    private var handler: Handler = Handler() // used  for autosave looper
     private var runnable: Runnable? = null // used for autosave looper
     private var delay = 10000 // used for autosave looper: 10000 = 10 seconds
     private lateinit var currNote: Note
@@ -62,8 +62,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var noteDao: NoteDao
     private var recording: Boolean = false
     private lateinit var editor: Editor
-    var openSection =
-        "data_structures" // REDUNDANT - remove when database will save last open page
+    lateinit var openSection: String
     private var mScale = 1f
     private var mScaleGestureDetector: ScaleGestureDetector? = null
     private var gestureDetector: GestureDetector? = null
@@ -81,11 +80,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         editor.load(currNote.contents)
         supportActionBar?.title = sectionName
         openSection = sectionName
-        // TO IMPLEMENT: load openSection into database
         hideKeyboard()
     }
 
     fun saveFile() {
+        // update last modified time
+        noteDao.update(openSection, System.currentTimeMillis())
         Log.d("EditorAddress", editor.toString())
         Log.d("currNoteAddress", currNote.toString())
         editor.save(currNote)
@@ -209,8 +209,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         this.db = NoteRoomDatabase.getDatabase(applicationContext)
         this.noteDao = db.noteDao()
 
-        createMissingFiles()
-
         expandableListView = findViewById(R.id.expandableListView)
         prepareMenuData()
         populateExpandableList()
@@ -254,10 +252,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
          * NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
          * NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
          * NavigationUI.setupWithNavController(navigationView, navController); */
-
-        // TO IMPLEMENT: openSection = load from database
-
         editor = Editor(findViewById(R.id.editor), db.noteDao())
+        openSection = "data_structures"
+        loadFromDatabase(openSection)
+        openSection = noteDao.getMostRecentlyModifiedNote().toString()
         loadFromDatabase(openSection)
         expandableListView?.let { expandableListAdapter?.initiateExpandableListView(it) }
         expandableListAdapter?.initiateDao(noteDao)

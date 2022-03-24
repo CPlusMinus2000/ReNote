@@ -313,9 +313,9 @@ open class ExpandableListAdapter(
 
     private fun moveUpSection(actualText: String) {
         val section: Note = noteDao.findByName(actualText)
-        val anotherSection = noteDao.loadNextNoteInOrder(section.notebookName, section.customOrder)
+        val anotherSection = noteDao.loadPreviousNoteInOrder(section.notebookName, section.customOrder)
         Log.i("reorder", "method called")
-        if (anotherSection != null) { // section exists with larger order
+        if (anotherSection != null) { // section exists with smaller order
             Log.i("reorder", "not null")
             val newSection = Note(
                 section.contents,
@@ -344,8 +344,8 @@ open class ExpandableListAdapter(
 
     private fun moveDownSection(actualText: String) {
         val section: Note = noteDao.findByName(actualText)
-        val anotherSection = noteDao.loadPreviousNoteInOrder(section.notebookName, section.customOrder)
-        if (anotherSection != null) { // section exists with smaller order
+        val anotherSection = noteDao.loadNextNoteInOrder(section.notebookName, section.customOrder)
+        if (anotherSection != null) { // section exists with larger order
             val newSection = Note(
                 section.contents,
                 section.name,
@@ -372,7 +372,8 @@ open class ExpandableListAdapter(
     }
 
     private fun deleteSection(actualText: String) {
-        if (false) { // TO IMPLEMENT: if num of sections == 1
+
+        if (noteDao.noteCount() == 1) {
             val builder = AlertDialog.Builder(context)
             builder.setMessage("Section cannot be deleted because it is the last section left.")
             builder.setNegativeButton("OK") {
@@ -498,22 +499,34 @@ open class ExpandableListAdapter(
     }
 
     private fun moveUpNotebook(actualText: String) {
-
-        // TO IMPLEMENT
-
+        val notebook: Notebook = noteDao.findNotebookByName(actualText)
+        val anotherNotebook = noteDao.loadPreviousNotebookInOrder(notebook.order)
+        if (anotherNotebook != null) { // notebook exists with smaller order
+            val newNotebook = Notebook(
+                notebook.name,
+                anotherNotebook.order,
+                notebook.createdAt,
+                notebook.lastModified
+            )
+            val newAnotherNotebook = Notebook(
+                anotherNotebook.name,
+                notebook.order,
+                anotherNotebook.createdAt,
+                anotherNotebook.lastModified
+            )
+            noteDao.deleteNotebook(notebook)
+            noteDao.deleteNotebook(anotherNotebook)
+            noteDao.insertNotebook(newNotebook)
+            noteDao.insertNotebook(newAnotherNotebook)
+            mainActivity.prepareMenuData()
+            notifyDataSetChanged()
+        }
     }
 
     private fun moveDownNotebook(actualText: String) {
-
         val notebook: Notebook = noteDao.findNotebookByName(actualText)
-        val anotherNotebook = noteDao.loadPreviousNoteInOrder(section.notebookName, section.customOrder)
-        if (anotherSection != null) { // section exists with smaller order
-
-        if (false) { // notebook exists with smaller order
-
-            val notebook: Notebook = noteDao.findNotebookByName(actualText)
-            val anotherNotebook: Notebook = noteDao.findNotebookByName(actualText) // TO IMPLEMENT: get from query
-
+        val anotherNotebook = noteDao.loadNextNotebookInOrder(notebook.order)
+        if (anotherNotebook != null) { // notebook exists with larger order
             val newNotebook = Notebook(
                 notebook.name,
                 anotherNotebook.order,
@@ -536,7 +549,7 @@ open class ExpandableListAdapter(
     }
 
     private fun deleteNotebook(actualText: String) {
-        if (false) { // TO IMPLEMENT: if num of notebooks == 1
+        if (noteDao.notebookCount() == 1) {
             val builder = AlertDialog.Builder(context)
             builder.setMessage("Notebook cannot be deleted because it is the last notebook left.")
             builder.setNegativeButton("OK") {
