@@ -77,9 +77,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     @OptIn(ExperimentalSerializationApi::class)
     private fun loadFromDatabase(sectionName: String) {
-        Log.d("loadFromDatabase", db.toString())
         currNote = noteDao.findByName(sectionName)
-        Log.d("loadFromDatabase", currNote.toString())
         editor.load(currNote.contents)
         supportActionBar?.title = sectionName
     }
@@ -137,11 +135,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             // 4. make GET request to the given URL
             conn.connect()
-
-            Log.d("httpGet", "Response Code: ${conn.responseCode}")
-            Log.d("httpGet", "Response Message: ${conn.responseMessage}")
-            // Log.d("httpGet", "Error Message: ${conn.errorStream.bufferedReader().use { it.readText() }}")
-
             val response = conn.inputStream.bufferedReader().use { it.readText() }
 
             // 5. return response message
@@ -157,7 +150,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val os = conn.outputStream
         val writer = BufferedWriter(OutputStreamWriter(os, "UTF-8"))
         writer.write(jsonObject)
-        Log.i(MainActivity::class.java.toString(), jsonObject)
         writer.flush()
         writer.close()
         os.close()
@@ -191,23 +183,26 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 launch {
                     try {
                         val result = httpGet(url)
-                        Log.d("loadFromServer", result)
                         val noteList: List<Note> = Json.decodeFromString(result)
                         if (currNote.serverId != null) {
                             for (note in noteList) {
                                 if (note.serverId == currNote.serverId) {
                                     currNote = note
                                     loaded = true
+                                    editor.load(currNote.contents)
                                     break
                                 }
                             }
                         }
 
-                        for (note in noteList) {
-                            if (note.name == currNote.name && note.notebookName == currNote.notebookName) {
-                                currNote = note
-                                loaded = true
-                                break
+                        if (!loaded) {
+                            for (note in noteList) {
+                                if (note.name == currNote.name && note.notebookName == currNote.notebookName) {
+                                    currNote = note
+                                    loaded = true
+                                    editor.load(currNote.contents)
+                                    break
+                                }
                             }
                         }
                     } catch (e: Exception) {
@@ -406,6 +401,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.action_increase_font_size -> editor.increaseFontSize()
             R.id.action_decrease_font_size -> editor.decreaseFontSize()
             R.id.action_save -> saveToServer()
+            R.id.action_load -> loadFromServer()
             R.id.action_settings -> {
                 val intent = Intent(this, SettingsActivity::class.java)
                 startActivity(intent)
