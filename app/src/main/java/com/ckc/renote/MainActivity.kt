@@ -99,14 +99,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     @Throws(IOException::class, JSONException::class)
     private suspend fun httpPost(myUrl: String): String {
-
         val result = withContext(Dispatchers.IO) {
             val url = URL(myUrl)
             // 1. create HttpURLConnection
             val conn = url.openConnection() as HttpURLConnection
             conn.requestMethod = "POST"
             conn.setRequestProperty("Content-Type", "application/json; charset=utf-8")
-
 
             // 3. add JSON content to POST request body
             setPostRequestContent(conn, Json.encodeToString(currNote))
@@ -125,6 +123,32 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         Log.d("httpPost", result)
+        return result
+    }
+
+    @Throws(IOException::class, JSONException::class)
+    private suspend fun httpGet(myUrl: String): String {
+        val result = withContext(Dispatchers.IO) {
+            val url = URL(myUrl)
+            // 1. create HttpURLConnection
+            val conn = url.openConnection() as HttpURLConnection
+            conn.requestMethod = "GET"
+            conn.setRequestProperty("Content-Type", "application/json; charset=utf-8")
+
+            // 4. make GET request to the given URL
+            conn.connect()
+
+            Log.d("httpGet", "Response Code: ${conn.responseCode}")
+            Log.d("httpGet", "Response Message: ${conn.responseMessage}")
+            // Log.d("httpGet", "Error Message: ${conn.errorStream.bufferedReader().use { it.readText() }}")
+
+            val response = conn.inputStream.bufferedReader().use { it.readText() }
+
+            // 5. return response message
+            response + ""
+        }
+
+        Log.d("httpGet", result)
         return result
     }
 
@@ -155,6 +179,48 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         } else {
             Log.d("saveToServer", "No network connection available")
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun loadFromServer() {
+        if (checkNetworkConnection()) {
+            val url = SERVER_ADDRESS
+            var loaded = false
+            runBlocking{
+                launch {
+                    try {
+                        val result = httpGet(url)
+                        Log.d("loadFromServer", result)
+                        val noteList: List<Note> = Json.decodeFromString(result)
+                        if (currNote.serverId != null) {
+                            for (note in noteList) {
+                                if (note.serverId == currNote.serverId) {
+                                    currNote = note
+                                    loaded = true
+                                    break
+                                }
+                            }
+                        }
+
+                        for (note in noteList) {
+                            if (note.name == currNote.name && note.notebookName == currNote.notebookName) {
+                                currNote = note
+                                loaded = true
+                                break
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.d("loadFromServer", e.toString())
+                    }
+                }
+            }
+
+            if (!loaded) {
+                Toast.makeText(this, "Note not found", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Log.d("loadFromServer", "No network connection available")
             Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show()
         }
     }
