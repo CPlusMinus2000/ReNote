@@ -211,6 +211,31 @@ class NoteRoomDatabaseTest : TestCase() {
         assertEquals(testNote2.name, ret2)
     }
 
+    @Test
+    fun testGetMaxCustomOrder() {
+        // Clear the database
+        dao.deleteAllNotes()
+        dao.insert(testNote)
+        dao.insert(testNote2)
+        val ret = dao.getMaxCustomOrder()
+        assertEquals(testNote2.customOrder, ret)
+        dao.insert(testNote3)
+        val ret2 = dao.getMaxCustomOrder()
+        assertEquals(testNote3.customOrder, ret2)
+    }
+
+    @Test
+    fun testGetMaxNotebookOrder() {
+        // Clear the database
+        dao.deleteAllNotebooks()
+        dao.insertNotebook(testNotebook)
+        val ret = dao.getMaxNotebookOrder()
+        assertEquals(testNotebook.order, ret)
+        dao.insertNotebook(testNotebook2)
+        val ret2 = dao.getMaxNotebookOrder()
+        assertEquals(testNotebook2.order, ret2)
+    }
+
     @After
     public override fun tearDown() {}
 }
