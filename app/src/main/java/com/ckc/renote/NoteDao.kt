@@ -13,6 +13,12 @@ interface NoteDao {
     @Query("SELECT * FROM notebooks ORDER BY notebook_order ASC")
     fun loadNotebooksInOrder(): List<Notebook>
 
+    @Query("SELECT * FROM notebooks ORDER BY created_at ASC")
+    fun loadNotebooksCreatedAt(): List<Notebook>
+
+    @Query("SELECT * FROM notebooks ORDER BY last_modified DESC")
+    fun loadNotebooksLastModified(): List<Notebook>
+
     @Query("SELECT MAX(custom_order) FROM notes")
     fun getMaxCustomOrder(): Int
 
@@ -50,6 +56,9 @@ interface NoteDao {
 
     @Query("UPDATE notes SET last_edited = :lastEdited WHERE name = :name")
     fun update(name: String, lastEdited: Long)
+
+    @Query("UPDATE notebooks SET last_modified = :lastEdited WHERE name = :name")
+    fun updateNotebook(name: String, lastEdited: Long)
 
     @Query("SELECT * FROM notes WHERE notebook_name = :notebookName AND custom_order < :customOrder ORDER BY custom_order DESC LIMIT 1")
     fun loadPreviousNoteInOrder(notebookName: String, customOrder: Int): Note?

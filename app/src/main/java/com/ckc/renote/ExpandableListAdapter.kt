@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Typeface
 import android.text.InputType
@@ -65,8 +66,6 @@ open class ExpandableListAdapter(
                 txtListChild?.background = newSectionBackground
             }
             val newNotebookBackground = ContextCompat.getDrawable(context, R.drawable.new_notebook_button)
-            //shape.setColor(ContextCompat.getColor(context, R.color.design_default_color_on_secondary))
-            //shape.setCornerRadius(32F)
             val groupView: View = getGroup(groupPosition).view
             val optionsButton = groupView.findViewById<ImageView>(R.id.options_button)
             val lblListHeader = groupView.findViewById<TextView>(R.id.lblListHeader)
@@ -135,12 +134,6 @@ open class ExpandableListAdapter(
         val headerTitle = getGroup(groupPosition).menuName
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val newView: View = convertView ?: inflater.inflate(R.layout.list_group_header, null)
-        /*
-        if (headerTitle == "+ new notebook") {
-            newView = convertView ?: layoutInflater.inflate(R.layout.list_group_header_new_notebook, null)
-        } else {
-            newView = convertView ?: layoutInflater.inflate(R.layout.list_group_header, null)
-        }**/
         val lblListHeader = newView.findViewById<TextView>(R.id.lblListHeader)
         lblListHeader.setTypeface(null, Typeface.BOLD)
         lblListHeader.text = headerTitle
@@ -313,62 +306,72 @@ open class ExpandableListAdapter(
     }
 
     private fun moveUpSection(actualText: String) {
-        val section: Note = noteDao.findByName(actualText)
-        val anotherSection = noteDao.loadPreviousNoteInOrder(section.notebookName, section.customOrder)
-        Log.i("reorder", "method called")
-        if (anotherSection != null) { // section exists with smaller order
-            Log.i("reorder", "not null")
-            val newSection = Note(
-                section.contents,
-                section.name,
-                section.creationTime,
-                section.lastEdited,
-                anotherSection.customOrder,
-                section.notebookName
-            )
-            val newAnotherSection = Note(
-                anotherSection.contents,
-                anotherSection.name,
-                anotherSection.creationTime,
-                anotherSection.lastEdited,
-                section.customOrder,
-                anotherSection.notebookName
-            )
-            noteDao.delete(section)
-            noteDao.delete(anotherSection)
-            noteDao.insert(newSection)
-            noteDao.insert(newAnotherSection)
-            mainActivity.prepareMenuData()
-            notifyDataSetChanged()
+        val sortBy = preferences.getString("sort_by", "custom_order")
+        if (sortBy == "custom_order") {
+            val section: Note = noteDao.findByName(actualText)
+            val anotherSection = noteDao.loadPreviousNoteInOrder(section.notebookName, section.customOrder)
+            Log.i("reorder", "method called")
+            if (anotherSection != null) { // section exists with smaller order
+                Log.i("reorder", "not null")
+                val newSection = Note(
+                    section.contents,
+                    section.name,
+                    section.creationTime,
+                    section.lastEdited,
+                    anotherSection.customOrder,
+                    section.notebookName
+                )
+                val newAnotherSection = Note(
+                    anotherSection.contents,
+                    anotherSection.name,
+                    anotherSection.creationTime,
+                    anotherSection.lastEdited,
+                    section.customOrder,
+                    anotherSection.notebookName
+                )
+                noteDao.delete(section)
+                noteDao.delete(anotherSection)
+                noteDao.insert(newSection)
+                noteDao.insert(newAnotherSection)
+                mainActivity.prepareMenuData()
+                notifyDataSetChanged()
+            }
+        } else {
+            openDialogCannotChangeOrder()
         }
     }
 
     private fun moveDownSection(actualText: String) {
-        val section: Note = noteDao.findByName(actualText)
-        val anotherSection = noteDao.loadNextNoteInOrder(section.notebookName, section.customOrder)
-        if (anotherSection != null) { // section exists with larger order
-            val newSection = Note(
-                section.contents,
-                section.name,
-                section.creationTime,
-                section.lastEdited,
-                anotherSection.customOrder,
-                section.notebookName
-            )
-            val newAnotherSection = Note(
-                anotherSection.contents,
-                anotherSection.name,
-                anotherSection.creationTime,
-                anotherSection.lastEdited,
-                section.customOrder,
-                anotherSection.notebookName
-            )
-            noteDao.delete(section)
-            noteDao.delete(anotherSection)
-            noteDao.insert(newSection)
-            noteDao.insert(newAnotherSection)
-            mainActivity.prepareMenuData()
-            notifyDataSetChanged()
+        val sortBy = preferences.getString("sort_by", "custom_order")
+        if (sortBy == "custom_order") {
+            val section: Note = noteDao.findByName(actualText)
+            val anotherSection = noteDao.loadNextNoteInOrder(section.notebookName, section.customOrder)
+            if (anotherSection != null) { // section exists with larger order
+                val newSection = Note(
+                    section.contents,
+                    section.name,
+                    section.creationTime,
+                    section.lastEdited,
+                    anotherSection.customOrder,
+                    section.notebookName
+                )
+                val newAnotherSection = Note(
+                    anotherSection.contents,
+                    anotherSection.name,
+                    anotherSection.creationTime,
+                    anotherSection.lastEdited,
+                    section.customOrder,
+                    anotherSection.notebookName
+                )
+                noteDao.delete(section)
+                noteDao.delete(anotherSection)
+                noteDao.insert(newSection)
+                noteDao.insert(newAnotherSection)
+                mainActivity.prepareMenuData()
+                notifyDataSetChanged()
+            }
+        } else {
+            openDialogCannotChangeOrder()
         }
     }
 
@@ -500,52 +503,62 @@ open class ExpandableListAdapter(
     }
 
     private fun moveUpNotebook(actualText: String) {
-        val notebook: Notebook = noteDao.findNotebookByName(actualText)
-        val anotherNotebook = noteDao.loadPreviousNotebookInOrder(notebook.order)
-        if (anotherNotebook != null) { // notebook exists with smaller order
-            val newNotebook = Notebook(
-                notebook.name,
-                anotherNotebook.order,
-                notebook.createdAt,
-                notebook.lastModified
-            )
-            val newAnotherNotebook = Notebook(
-                anotherNotebook.name,
-                notebook.order,
-                anotherNotebook.createdAt,
-                anotherNotebook.lastModified
-            )
-            noteDao.deleteNotebook(notebook)
-            noteDao.deleteNotebook(anotherNotebook)
-            noteDao.insertNotebook(newNotebook)
-            noteDao.insertNotebook(newAnotherNotebook)
-            mainActivity.prepareMenuData()
-            notifyDataSetChanged()
+        val sortBy = preferences.getString("sort_by", "custom_order")
+        if (sortBy == "custom_order") {
+            val notebook: Notebook = noteDao.findNotebookByName(actualText)
+            val anotherNotebook = noteDao.loadPreviousNotebookInOrder(notebook.order)
+            if (anotherNotebook != null) { // notebook exists with smaller order
+                val newNotebook = Notebook(
+                    notebook.name,
+                    anotherNotebook.order,
+                    notebook.createdAt,
+                    notebook.lastModified
+                )
+                val newAnotherNotebook = Notebook(
+                    anotherNotebook.name,
+                    notebook.order,
+                    anotherNotebook.createdAt,
+                    anotherNotebook.lastModified
+                )
+                noteDao.deleteNotebook(notebook)
+                noteDao.deleteNotebook(anotherNotebook)
+                noteDao.insertNotebook(newNotebook)
+                noteDao.insertNotebook(newAnotherNotebook)
+                mainActivity.prepareMenuData()
+                notifyDataSetChanged()
+            }
+        } else {
+            openDialogCannotChangeOrder()
         }
     }
 
     private fun moveDownNotebook(actualText: String) {
-        val notebook: Notebook = noteDao.findNotebookByName(actualText)
-        val anotherNotebook = noteDao.loadNextNotebookInOrder(notebook.order)
-        if (anotherNotebook != null) { // notebook exists with larger order
-            val newNotebook = Notebook(
-                notebook.name,
-                anotherNotebook.order,
-                notebook.createdAt,
-                notebook.lastModified
-            )
-            val newAnotherNotebook = Notebook(
-                anotherNotebook.name,
-                notebook.order,
-                anotherNotebook.createdAt,
-                anotherNotebook.lastModified
-            )
-            noteDao.deleteNotebook(notebook)
-            noteDao.deleteNotebook(anotherNotebook)
-            noteDao.insertNotebook(newNotebook)
-            noteDao.insertNotebook(newAnotherNotebook)
-            mainActivity.prepareMenuData()
-            notifyDataSetChanged()
+        val sortBy = preferences.getString("sort_by", "custom_order")
+        if (sortBy == "custom_order") {
+            val notebook: Notebook = noteDao.findNotebookByName(actualText)
+            val anotherNotebook = noteDao.loadNextNotebookInOrder(notebook.order)
+            if (anotherNotebook != null) { // notebook exists with larger order
+                val newNotebook = Notebook(
+                    notebook.name,
+                    anotherNotebook.order,
+                    notebook.createdAt,
+                    notebook.lastModified
+                )
+                val newAnotherNotebook = Notebook(
+                    anotherNotebook.name,
+                    notebook.order,
+                    anotherNotebook.createdAt,
+                    anotherNotebook.lastModified
+                )
+                noteDao.deleteNotebook(notebook)
+                noteDao.deleteNotebook(anotherNotebook)
+                noteDao.insertNotebook(newNotebook)
+                noteDao.insertNotebook(newAnotherNotebook)
+                mainActivity.prepareMenuData()
+                notifyDataSetChanged()
+            }
+        } else {
+            openDialogCannotChangeOrder()
         }
     }
 
@@ -626,5 +639,19 @@ open class ExpandableListAdapter(
             true
         })
         popup.show()
+    }
+
+    private fun openDialogCannotChangeOrder() {
+        val builder = AlertDialog.Builder(context)
+        builder.setMessage("Change the order to custom order in order to change the order.")
+        builder.setPositiveButton("Go to settings") {
+                _, _ ->
+            mainActivity.openSettings()
+        }
+        builder.setNegativeButton("Cancel") {
+                dialog, _ -> dialog.cancel()
+        }
+        val alertDialog = builder.create()
+        alertDialog.show()
     }
 }

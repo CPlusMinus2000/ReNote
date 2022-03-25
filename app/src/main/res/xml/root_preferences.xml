@@ -1,5 +1,5 @@
-<PreferenceScreen
-        xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory
         app:title="Basic preferences">
@@ -11,11 +11,24 @@
             app:summaryOff="Opened notebooks will remain open when another notebook is opened"/>
 
         <ListPreference
-            app:dialogTitle="Select bluetooth adapter"
-            app:key = "bluetoothName"
-            app:summary="Click to show a list to choose from"
-            app:title="Bluetooth adapter"
-            />
+            app:key = "sort_by"
+            app:title="Sort notes by"
+            android:entries="@array/sort_by_entries"
+            android:entryValues="@array/sort_by_values"
+            android:defaultValue="custom_order"
+            app:useSimpleSummaryProvider="true"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="Appearance">
+
+        <ListPreference
+            app:key = "theme"
+            app:title="Choose the colour theme"
+            android:entries="@array/themes_entries"
+            android:entryValues="@array/themes_values"
+            android:defaultValue="automatic"
+            app:useSimpleSummaryProvider="true"/>
     </PreferenceCategory>
 
 </PreferenceScreen>

@@ -6,6 +6,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Typeface
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
@@ -29,7 +30,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import androidx.preference.PreferenceManager
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -86,6 +87,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     fun saveFile() {
         // update last modified time
         noteDao.update(openSection, System.currentTimeMillis())
+        noteDao.updateNotebook(noteDao.findByName(openSection).notebookName, System.currentTimeMillis())
         Log.d("EditorAddress", editor.toString())
         Log.d("currNoteAddress", currNote.toString())
         editor.save(currNote)
@@ -271,23 +273,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setContentView(R.layout.activity_main)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
-        val fab = findViewById<FloatingActionButton>(R.id.fab)
-        fab.setOnClickListener {
-            //db.clearAllTables()
-            //startActivity(Intent(this@MainActivity, MainActivity2::class.java))
-            val builder = AlertDialog.Builder(this)
-            builder.setMessage("I wish your sleeves to be always wet.")
-            builder.setCancelable(false)
-            builder.setPositiveButton("Hope for the best") { _, _ ->
-
-            }
-            builder.setNegativeButton("Accept curse") { dialog, _ ->
-                dialog.cancel()
-            }
-            val alertDialog = builder.create()
-            alertDialog.show()
-        }
-
         this.db = NoteRoomDatabase.getDatabase(applicationContext)
         this.noteDao = db.noteDao()
 
@@ -306,6 +291,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 Log.i("drawer", "onDrawerOpened")
                 hideKeyboard()
                 saveFile()
+                prepareMenuData()
+                expandableListAdapter?.notifyDataSetChanged()
             }
 
             override fun onDrawerClosed(drawerView: View) {
@@ -430,10 +417,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.action_decrease_font_size -> editor.decreaseFontSize()
             R.id.action_save -> saveToServer()
             R.id.action_load -> loadFromServer()
-            R.id.action_settings -> {
-                val intent = Intent(this, SettingsActivity::class.java)
-                startActivity(intent)
-            }
+            R.id.action_settings -> openSettings()
             else -> return super.onOptionsItemSelected(item)
         }
         return true
@@ -464,7 +448,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
         headerList.clear()
         childList.clear()
-        val notebooks: List<Notebook> = noteDao.loadNotebooksInOrder()
+        val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val sortBy = preferences.getString("sort_by", "custom_order")
+        val notebooks: List<Notebook> = when (sortBy) {
+            "custom_order" -> {
+                noteDao.loadNotebooksInOrder()
+            }
+            "last_created" -> {
+                noteDao.loadNotebooksCreatedAt()
+            }
+            else -> {
+                noteDao.loadNotebooksLastModified()
+            }
+        }
+
         val notebookIterator = notebooks.iterator()
         while (notebookIterator.hasNext()) {
             val notebook: Notebook = notebookIterator.next()
@@ -477,7 +474,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             )
             val childModelsList: MutableList<MenuModel> = ArrayList()
             headerList.add(menuModel)
-            val sections: List<Note> = noteDao.loadNotesInOrder(notebook.name)
+
+            val sections: List<Note> = when (sortBy) {
+                "custom_order" -> {
+                    noteDao.loadNotesInOrder(notebook.name)
+                }
+                "last_created" -> {
+                    noteDao.loadNotesByCreatedAt()
+                }
+                else -> {
+                    noteDao.loadNotesByLastModified()
+                }
+            }
+
             val sectionIterator = sections.iterator()
             while (sectionIterator.hasNext()) {
                 val section: Note = sectionIterator.next()
@@ -783,5 +792,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         })*/
         val alertDialog = builder.create()
         alertDialog.show()
+    }
+
+    fun openSettings() {
+        val intent = Intent(this, SettingsActivity::class.java)
+        startActivity(intent)
     }
 }
