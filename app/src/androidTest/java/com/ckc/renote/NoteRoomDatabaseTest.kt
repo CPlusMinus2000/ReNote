@@ -26,6 +26,13 @@ class NoteRoomDatabaseTest : TestCase() {
         "This is a test3", "test3", System.currentTimeMillis(),
         System.currentTimeMillis(), 3, bookName
     )
+    private val testNote4 = Note(
+        "This is a test4", "test4", System.currentTimeMillis(),
+        System.currentTimeMillis(), 4, bookName, Recording(
+            "This isn't really audio but whatever",
+            mutableListOf(1L, 2L, 3L), mutableListOf(State("haha"), State("hoho"), State("hehe"))
+        )
+    )
     private val testNotebook = Notebook(
         bookName, 1, System.currentTimeMillis(), System.currentTimeMillis()
     )
@@ -48,6 +55,13 @@ class NoteRoomDatabaseTest : TestCase() {
         dao.insert(testNote)
         val ret = dao.findByName(noteName)
         assertEquals(testNote, ret)
+    }
+
+    @Test
+    fun testInsertRecording() {
+        dao.insert(testNote4)
+        val ret = dao.findByName(testNote4.name)
+        assertEquals(testNote4, ret)
     }
 
     @Test
@@ -190,6 +204,63 @@ class NoteRoomDatabaseTest : TestCase() {
 
         val ret2 = dao.loadNextNotebookInOrder(testNotebook2.order)
         assertEquals(null, ret2)
+    }
+
+    @Test
+    fun testGetMostRecentNote() {
+        // Clear the database
+        dao.deleteAllNotes()
+        assertEquals(0, dao.noteCount())
+
+        dao.insert(testNote)
+        dao.insert(testNote2)
+        testNote3.lastEdited = System.currentTimeMillis()
+        dao.insert(testNote3)
+        val ret = dao.getMostRecentlyModifiedNote()
+        assertEquals(testNote3.name, ret)
+
+        testNote2.lastEdited = System.currentTimeMillis()
+        dao.insert(testNote2)
+        val ret2 = dao.getMostRecentlyModifiedNote()
+        assertEquals(testNote2.name, ret2)
+    }
+
+    @Test
+    fun testGetMaxCustomOrder() {
+        // Clear the database
+        dao.deleteAllNotes()
+        dao.insert(testNote)
+        dao.insert(testNote2)
+        val ret = dao.getMaxCustomOrder()
+        assertEquals(testNote2.customOrder, ret)
+        dao.insert(testNote3)
+        val ret2 = dao.getMaxCustomOrder()
+        assertEquals(testNote3.customOrder, ret2)
+    }
+
+    @Test
+    fun testGetMaxNotebookOrder() {
+        // Clear the database
+        dao.deleteAllNotebooks()
+        dao.insertNotebook(testNotebook)
+        val ret = dao.getMaxNotebookOrder()
+        assertEquals(testNotebook.order, ret)
+        dao.insertNotebook(testNotebook2)
+        val ret2 = dao.getMaxNotebookOrder()
+        assertEquals(testNotebook2.order, ret2)
+    }
+
+    @Test
+    fun testLoadNotesInOrder() {
+        // Clear the database
+        dao.deleteAllNotes()
+        dao.insert(testNote3)
+        dao.insert(testNote)
+        dao.insert(testNote2)
+        val ret = dao.loadNotesInOrder(bookName)
+        assertEquals(testNote, ret[0])
+        assertEquals(testNote2, ret[1])
+        assertEquals(testNote3, ret[2])
     }
 
     @After
