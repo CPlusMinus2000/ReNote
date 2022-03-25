@@ -751,7 +751,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val builder = AlertDialog.Builder(this)
         val view = layoutInflater.inflate(R.layout.rewind_alert_dialog, null)
         builder.setView(view)
-        builder.setMessage("Rewind options")
+        builder.setMessage("Rewind controls")
         //val wrapper = view.findViewById<LinearLayout>(R.id.search_wrapper_linear_layout)
         //val searchHeader = wrapper.findViewById<ConstraintLayout>(R.id.search_header)
         //val editText = searchHeader.findViewById<EditText>(R.id.search_edit_text)
