@@ -250,6 +250,19 @@ class NoteRoomDatabaseTest : TestCase() {
         assertEquals(testNotebook2.order, ret2)
     }
 
+    @Test
+    fun testLoadNotesInOrder() {
+        // Clear the database
+        dao.deleteAllNotes()
+        dao.insert(testNote3)
+        dao.insert(testNote)
+        dao.insert(testNote2)
+        val ret = dao.loadNotesInOrder(bookName)
+        assertEquals(testNote, ret[0])
+        assertEquals(testNote2, ret[1])
+        assertEquals(testNote3, ret[2])
+    }
+
     @After
     public override fun tearDown() {}
 }
