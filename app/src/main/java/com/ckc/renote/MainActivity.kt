@@ -108,7 +108,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             conn.setRequestProperty("Content-Type", "application/json; charset=utf-8")
 
             // 3. add JSON content to POST request body
-            setPostRequestContent(conn, Json.encodeToString(currNote))
+            val requestNote = RequestNote(currNote)
+            setPostRequestContent(conn, Json.encodeToString(requestNote))
 
             // 4. make POST request to the given URL
             conn.connect()
@@ -167,7 +168,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     try {
                         val result = httpPost(url)
                         Log.d("saveToServer", result)
-                        currNote = Json.decodeFromString(result)
+                        val requestNote = Json.decodeFromString<RequestNote>(result)
+                        currNote = Note(requestNote)
                         saved = true
                     } catch (e: Exception) {
                         Log.d("saveToServer", e.toString())
@@ -194,11 +196,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 launch {
                     try {
                         val result = httpGet(url)
-                        val noteList: List<Note> = Json.decodeFromString(result)
+                        val noteList: List<RequestNote> = Json.decodeFromString(result)
                         if (currNote.serverId != null) {
                             for (note in noteList) {
                                 if (note.serverId == currNote.serverId) {
-                                    currNote = note
+                                    currNote = Note(note)
                                     loaded = true
                                     editor.load(currNote)
                                     break
@@ -209,7 +211,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         if (!loaded) {
                             for (note in noteList) {
                                 if (note.name == currNote.name && note.notebookName == currNote.notebookName) {
-                                    currNote = note
+                                    currNote = Note(note)
                                     loaded = true
                                     editor.load(currNote)
                                     break
