@@ -13,8 +13,8 @@ class Editor(
 
     private val undoManager: UndoManager = UndoManager()
     private var undoing = false
-    private val rewinder: Rewinder = Rewinder()
-    private var initContent: String = ""
+    val rewinder: Rewinder = Rewinder()
+    private lateinit var initNote: Note
 
     init {
         webview.webViewClient = this
@@ -24,7 +24,7 @@ class Editor(
 
     override fun onPageFinished(view: WebView?, url: String?) {
         super.onPageFinished(view, url)
-        load(initContent)
+        load(initNote)
     }
 
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
@@ -42,8 +42,8 @@ class Editor(
     fun setEditable(editable: Boolean) = webview.evaluateJavascript(
         "document.getElementById('editor').contentEditable = $editable", null)
 
-    fun setInitContent(content: String) {
-        initContent = content
+    fun setInitNote(note: Note) {
+        initNote = note
         webview.loadUrl("file:///android_res/raw/editor.html")
     }
 
@@ -56,14 +56,16 @@ class Editor(
     fun save(currNote: Note) = webview.evaluateJavascript("document.getElementById('editor').innerHTML") {
         currNote.contents = it
         currNote.lastEdited = System.currentTimeMillis()
+        currNote.recording = rewinder.recording
         // file.writeText(Json.encodeToString(currNote), Charsets.UTF_8)
         noteDao.insert(currNote)
     }
 
-    fun load(text: String) {
-        val trimmed = text.trim('\"')
+    fun load(currNote: Note) {
+        val trimmed = currNote.contents.trim('\"')
         setContent(trimmed)
         undoManager.initState(State(trimmed))
+        rewinder.recording = currNote.recording
     }
 
     fun bold() = webview.evaluateJavascript("document.execCommand('bold')", null)
@@ -90,7 +92,7 @@ class Editor(
         setContent(undoManager.redo().content)
     }
 
-    fun startRecording(audioFile: String) = rewinder.startRecording(undoManager.getCurrentState(), audioFile)
+    fun startRecording() = rewinder.startRecording(undoManager.getCurrentState())
 
     fun stopRecording() = rewinder.stopRecording()
 

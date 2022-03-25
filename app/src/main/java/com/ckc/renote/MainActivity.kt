@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     fun loadFromDatabase(sectionName: String) {
         Log.d("loadFromDatabase", db.toString())
         currNote = noteDao.findByName(sectionName)
-        editor.load(currNote.contents)
+        editor.load(currNote)
         supportActionBar?.title = sectionName
         openSection = sectionName
         hideKeyboard()
@@ -200,7 +200,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                                 if (note.serverId == currNote.serverId) {
                                     currNote = note
                                     loaded = true
-                                    editor.load(currNote.contents)
+                                    editor.load(currNote)
                                     break
                                 }
                             }
@@ -211,7 +211,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                                 if (note.name == currNote.name && note.notebookName == currNote.notebookName) {
                                     currNote = note
                                     loaded = true
-                                    editor.load(currNote.contents)
+                                    editor.load(currNote)
                                     break
                                 }
                             }
@@ -334,10 +334,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
          * NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
          * NavigationUI.setupWithNavController(navigationView, navController); */
         editor = Editor(findViewById(R.id.editor), db.noteDao())
+        editor.rewinder.setTempFile("${externalCacheDir?.absolutePath}/audiorecordtest.3gp")
         handler.postDelayed(Runnable {
             val saved = noteDao.getMostRecentlyModifiedNote() ?: "data_structures"
             currNote = noteDao.findByName(saved)
-            editor.setInitContent(currNote.contents)
+            editor.setInitNote(currNote)
             supportActionBar?.title = saved
             openSection = saved
         }, 100)
@@ -400,7 +401,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             requestRecordAudioPermission
                         )
                     } else {
-                        editor.startRecording("${externalCacheDir?.absolutePath}/audiorecordtest.3gp")
+                        editor.startRecording()
                         recordButton.title = "Stop"
                         recording = true
                     }
@@ -546,11 +547,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     expandableListAdapter!!.createNewSection(groupPosition)
                 } else {
                     saveFile()
-                    val model = childList[headerList[groupPosition]]!![childPosition]
-                    loadFromDatabase(model.menuName)
-                    // Close the navigation drawer
-                    val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
-                    drawer.closeDrawer(GravityCompat.START)
+                    handler.postDelayed(Runnable {
+                        val model = childList[headerList[groupPosition]]!![childPosition]
+                        loadFromDatabase(model.menuName)
+                        // Close the navigation drawer
+                        val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
+                        drawer.closeDrawer(GravityCompat.START)
+                    }, 100)
                 }
             }
             false
@@ -613,7 +616,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == requestRecordAudioPermission) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                editor.startRecording("${externalCacheDir?.absolutePath}/audiorecordtest.3gp")
+                editor.startRecording()
                 recordButton.title = "Stop"
                 recording = true
             } else {
