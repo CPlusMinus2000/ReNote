@@ -7,8 +7,8 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.graphics.Typeface
 import android.content.pm.PackageManager
+import android.graphics.Typeface
 import android.net.ConnectivityManager
 import android.os.Bundle
 import android.os.Handler
@@ -25,6 +25,7 @@ import android.widget.*
 import android.widget.ExpandableListView.OnGroupClickListener
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
@@ -44,6 +45,7 @@ import org.json.JSONException
 import java.io.BufferedWriter
 import java.io.IOException
 import java.io.OutputStreamWriter
+import java.lang.ref.WeakReference
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -73,6 +75,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private val requestImagePermission = 400
     private val requestOpenGalleryIntent = 444
     private var permissions: Array<String> = arrayOf(Manifest.permission.RECORD_AUDIO)
+    private lateinit var currentTheme: String
 
     @OptIn(ExperimentalSerializationApi::class)
     fun loadFromDatabase(sectionName: String) {
@@ -85,6 +88,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     fun saveFile() {
+        Log.i("Autosave", "Autosave")
+        val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val selectedTheme = preferences.getString("theme", "automatic").toString()
+        if (selectedTheme != currentTheme) {
+            if (selectedTheme == "light_theme") {
+                lightTheme()
+            } else if (selectedTheme == "dark_theme") {
+                darkTheme()
+            } else {
+                automaticTheme()
+            }
+            currentTheme = selectedTheme
+        }
         // update last modified time
         noteDao.update(openSection, System.currentTimeMillis())
         noteDao.updateNotebook(noteDao.findByName(openSection).notebookName, System.currentTimeMillis())
@@ -361,6 +377,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     return true
                 }
             })
+        val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        currentTheme = preferences.getString("theme", "automatic").toString()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -480,10 +498,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     noteDao.loadNotesInOrder(notebook.name)
                 }
                 "last_created" -> {
-                    noteDao.loadNotesByCreatedAt()
+                    noteDao.loadNotesByCreatedAt(notebook.name)
                 }
                 else -> {
-                    noteDao.loadNotesByLastModified()
+                    noteDao.loadNotesByLastModified(notebook.name)
                 }
             }
 
@@ -575,7 +593,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             handler.postDelayed(runnable!!, delay.toLong())
             Log.d("Editor", editor.toString())
             saveFile() // autosave
-            // Toast.makeText(this@MainActivity, "This method will run every 10 seconds", Toast.LENGTH_SHORT).show()
         }.also { runnable = it }, delay.toLong())
         super.onResume()
     }
@@ -798,4 +815,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val intent = Intent(this, SettingsActivity::class.java)
         startActivity(intent)
     }
+
+    fun lightTheme() {
+        Log.i("preferences", "Hello from light")
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+    }
+
+    fun darkTheme() {
+        Log.i("preferences", "Hello from dark")
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+    }
+
+    fun automaticTheme() {
+        Log.i("preferences", "Hello from automatic")
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+    }
+
 }

@@ -29,12 +29,12 @@ interface NoteDao {
     fun loadNotesInOrder(notebookName: String): List<Note>
 
     // Get the notes by order of creation time
-    @Query("SELECT * FROM notes ORDER BY creation_time ASC")
-    fun loadNotesByCreatedAt(): List<Note>
+    @Query("SELECT * FROM notes WHERE notebook_name = :notebookName ORDER BY creation_time ASC")
+    fun loadNotesByCreatedAt(notebookName: String): List<Note>
 
     // Get the notes by order of last modified time
-    @Query("SELECT * FROM notes ORDER BY last_edited DESC")
-    fun loadNotesByLastModified(): List<Note>
+    @Query("SELECT * FROM notes WHERE notebook_name = :notebookName ORDER BY last_edited DESC")
+    fun loadNotesByLastModified(notebookName: String): List<Note>
 
     @Query("SELECT * FROM notes WHERE name LIKE :name LIMIT 1")
     fun findByName(name: String): Note
