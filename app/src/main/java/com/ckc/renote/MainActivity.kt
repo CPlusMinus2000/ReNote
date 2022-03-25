@@ -385,7 +385,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 saveFile()
                 showSearchAlertDialog()
             }
-            R.id.action_rewind_options -> showRewindAlertDialog()
             R.id.action_record -> {
                 recordButton = item
                 if (!recording) {
