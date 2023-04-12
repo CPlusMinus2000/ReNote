@@ -1,0 +1,15 @@
+What do you like in note-taking apps?
+ - Different colours
+ - Checkable lists, bullet points, numbered lists
+ - Different font sizes, bolding (rich text)
+ - Cuteness, prettyness, you can make banners
+ - Dropdown menus, dividers with labels potentially
+ - Background options (see OneNote)
+ - Sticky notes on the page, adjustable sizing
+ - Convert to the correct font automatically
+ - Responsive, performant
+ - Sorting by time, name, topic, etc.
+ - Themes
+
+
+ - Notion is too bulky on mobile, Apple Notes is clean

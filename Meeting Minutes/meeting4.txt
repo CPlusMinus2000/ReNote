@@ -1,0 +1,22 @@
+CS 398 Meeting Minutes
+
+Date: January 17, 2022
+Team: CKC
+
+Present: Ivan, Adam, Henry, Colin
+Absent:
+
+Agenda: Discuss requirements, go over interview results
+
+Notes: We have compiled a non-exhaustive list of requirements
+gained from interviews, spanning handwriting, formatting,
+rewinding, exporting, security, performance, etc.
+
+Decisions: Meet up on Wednesday to discuss technical stuff
+
+TODO: Start looking at technical impact
+Conduct a few more interviews (make personas?) for additional requirements
+Meet up!
+Generally analyze requirements
+Figure out architecture? (We don't know very much though)
+Figure out which requirements are the core reqs

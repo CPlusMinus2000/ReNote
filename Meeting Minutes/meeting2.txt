@@ -1,0 +1,49 @@
+CS 398 Meeting Minutes
+
+Date: January 12, 2022
+Team: CKC
+
+Present: Ivan, Adam, Henry, Colin
+Absent:
+
+Agenda: Talk about requirements and potential useful features
+
+Notes: Want to construct a Notability-like app (rewind features)
+discussing ways to implement that (can we store the canvas state every half-second, say?)
+Thinking about the limitations of Android devices
+
+Interview: 
+Xiaoyan Xu
+ - What do you like about notetaking apps?
+  - Dragging images into the app
+  - Displaying code (code blocks w/ syntax highlighting)
+  - Dividing notes into categories, folders (sorting)
+
+Licheng Zhang
+ - What do you wish existed?
+  - Recognizing handwritten math would be cool
+
+Prof. Jeff Avery
+ - What do you like in notetaking apps?
+  - Likes Apple Notes (he cares about recording stuff in different devices, handwriting, images)
+   - but hates that it's proprietary and rich text
+  - Searchability of text notes and of pages
+  - Markdown support w/ colours (cool to work with rich text + Markdown but really hard)
+  - Doesn't care too much about basic formatting (bold, italicization)
+  - Store as or export to .md ideally
+  - Sorting
+  - Timestamps
+
+Decisions: We are targeting students
+
+TODO:
+ - Find people to interview
+  - Jeff himself
+  - Probably a TA or two
+  - Friends (hopefully they don't sugarcoat)
+  - Roommates
+
+ - Make personas
+ - Affinity chart
+ - User Story Breakdown
+ - Product Backlog (eventually)

@@ -1,0 +1,13 @@
+#editor {
+    background-color: #424242;
+    color: #FFFFFF;
+    min-width: 840px;
+    min-height: 1188px;
+}
+
+img {
+    display: block;
+    margin: 10px auto;
+    max-width: 600px;
+    max-height: 300px;
+}

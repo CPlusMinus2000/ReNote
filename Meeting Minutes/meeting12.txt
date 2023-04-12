@@ -1,0 +1,18 @@
+CS 398 Meeting Minutes
+
+Date: Feburary 7th, 2022
+Team: CKC
+
+Present: Ivan, Adam, Henry, Colin
+Absent:
+
+Agenda: We met up in class!
+
+Notes: Organized Gitlab, talked over some more requirements, what to move on to
+
+Decisions: Look up how to do basic text editor-ing in Kotlin
+We'll use HTML to organize our text files?
+Need to do research
+
+TODO: Research!
+Get organized

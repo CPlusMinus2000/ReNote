@@ -1,0 +1,34 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        app:title="Navigation drawer">
+
+        <SwitchPreferenceCompat
+            app:key="collapse"
+            app:title="Automatically collapse notebooks"
+            app:summaryOn="Opened notebooks will automatically collapse when another notebook is opened"
+            app:summaryOff="Opened notebooks will remain open when another notebook is opened"/>
+
+        <ListPreference
+            app:key = "sort_by"
+            app:title="Sort notes by"
+            android:entries="@array/sort_by_entries"
+            android:entryValues="@array/sort_by_values"
+            android:defaultValue="custom_order"
+            app:useSimpleSummaryProvider="true"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="Appearance">
+
+        <ListPreference
+            app:key = "theme"
+            app:title="Choose the colour theme"
+            android:entries="@array/themes_entries"
+            android:entryValues="@array/themes_values"
+            android:defaultValue="automatic"
+            app:useSimpleSummaryProvider="true"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>

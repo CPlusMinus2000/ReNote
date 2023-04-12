@@ -1,0 +1,31 @@
+CS 398 Meeting Minutes
+
+Date: January 14, 2022
+Team: CKC
+
+Present: Ivan, Adam, Henry, Colin
+Absent:
+
+Agenda: Discuss requirements, interviews, general direction
+we need to decide if we're going for a more technical or less technical audience
+how to store data, export files
+
+Notes: Jeff says don't worry about technical details right now,
+figure out what users want, that is the most important thing
+also establish target audience and users
+
+Decisions: Going for accessibility over technical capabilities (sorry Markdown)
+Need to incorporate:
+ - Rewind (*KILLER FEATURE*)
+ - Rich formatting, tables, lists
+ - Cloud support
+ - Images (warning: hard)
+ - Colours
+ - Search
+ - Sorting w/ timestamps
+ - Handwriting (OPTIONAL, MAY BE DIFFICULT)
+
+TODO:
+Interview more users, wide range of users
+Potentially have group interviews but probably one-on-one (figure it out as we go)
+Afterwards we make personas and affinity charts, maybe in person??
